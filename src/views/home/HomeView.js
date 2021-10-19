@@ -13,6 +13,8 @@ import { FullWidthLoading } from "../../components/loading/FullWidthLoading";
 import { sortByKey} from "../../utils/helper";
 import { CategoryIconCard } from "../../components/category/CategoryIconCard";
 
+import { ProductDetail } from "../../components/product/ProductDetail";
+
 export default class Home extends React.Component
 {
     state = {
@@ -47,6 +49,13 @@ export default class Home extends React.Component
         showRecentOrderToast: false,
         lastOrder: null,
         informativeBannerVisible: false,
+
+        banners: [],
+        inferior: [],
+
+        productID: null,
+
+        showDetail: false
     }
 
     async componentDidMount()
@@ -87,6 +96,17 @@ export default class Home extends React.Component
     initializeComponent = async () =>
     {
         await this.checkFirstTimeInApp()
+        
+        const location = JSON.parse(await AsyncStorage.getItem('location'));
+        
+        const res = await API.POST.init({location: location.id, page: "home"})
+        
+        if(!res.error) {
+            this.setState({banners: res.message.banners.superior})
+            this.setState({inferior: res.message.banners.inferior})
+        }
+
+
         this.retrieveCategories()
         this.retrieveOffers()
         this.retrieveBestSellers()
@@ -217,15 +237,6 @@ export default class Home extends React.Component
         this.props.navigation.navigate('GroupOfCategories', {title, id, categories});
     }
     
-    onTapSingleProduct = (productId, productName) => 
-    {
-        this.props.navigation.navigate({
-            routeName: 'ProductDetail', 
-            params: {id: productId, searchBy: SEARCH_BY.CODE, name: productName,},
-            key: `product_${productId}`,
-        })
-    }
-
     onTapSeeAllFeaturedProducts = () => 
     {
         if(!this.state.loadingOffers)
@@ -234,63 +245,25 @@ export default class Home extends React.Component
         }
     }
 
-
-    onTapSeeAllSponsoredBrands = () => 
+    onTapSingleProduct = (productId, productName) => 
     {
-        this.props.navigation.navigate('AllSponsoredBrands');
+     
+        this.setState({showDetail:true, productID: productId})
+        
     }
 
+    onCloseProductDetail = () => {
+        this.setState({showDetail: false})
+    }
 
-    onTapSeeAllBestSellers = () => 
-    {
-        if(!this.state.loadingBestSeller)
-        {
-            this.props.navigation.navigate('BestSellerProducts', {title: 'LO MÁS COMPRADO', type: BEST_SELLER.SELLERS})
+    onTapImage = (image) => {
+
+        if(image.data.codes) {
+            this.props.navigation.navigate('SearchProduct', {search: `[banner]${image.id}`, location: this.location})
+        } else if(image.data.keywords) {
+            this.props.navigation.navigate('SearchProduct', {search: `${image.data.keywords}`, location: this.location})
         }
     }
-
-    onTapSingleSponsoredBrand = (brandId, brandName, brandType, brandValue) =>
-    {
-        this.props.navigation.navigate('SponsoredBrand', {title: brandName, id: brandId, type: brandType, value: brandValue});
-    }
-
-
-
-
-    onRefresh = async () => 
-    {
-        this.setState({refreshing: true})
-        await this.initializeComponent()
-        this.setState({refreshing: false})
-    }
-
-
-    onAcceptVidaSanaTerms = () => 
-    {
-        this.setState({firstTimeInAppVisible: false}, () => {
-            this.props.navigation.navigate('VidaSana', {signUp: true})
-        })
-    }
-
-    // TODO: Order on the way
-    onPressRecentOrderDetails = () =>
-    {
-        if(this.state.lastOrder)
-        {
-            this.props.navigation.navigate('OrderDetails', {...this.state.lastOrder})
-            this.setState({lastOrder: null})
-        }
-        else
-        {
-            console.log("no last order", this.state.lastOrder);
-        }
-    }
-
-    onCloseRecentOrderToast = () =>
-    {
-        this.setState({lastOrder: null})
-    }
-   
       
     render()
     {
@@ -308,13 +281,8 @@ export default class Home extends React.Component
                         <View>
                             
                             <Carousel
-                                dotsColor={COLORS._1B42CB}
-                                images={[
-                                    {source: { uri:"https://staticimperacore.net/economia/banners/AmorAmistad2021-BannerAppP.jpg"}},
-                                    {source: { uri:"https://staticimperacore.net/economia/banners/DescuentoPG-BannerApp@2x.jpg"}},
-                                    {source: { uri:"https://staticimperacore.net/economia/banners/Banners_Pedialyte_1024X512.jpg"}},
-
-                                ]}
+                                images={this.state.banners}
+                                onTapImage={this.onTapImage.bind(this)}
                             />
 
                             <View style={styles.categoriesContainer}>
@@ -354,6 +322,14 @@ export default class Home extends React.Component
                                     <Text style={{textAlign:"center", padding:10, fontSize: 16, color: "white", fontFamily: FONTS.BOLD}}>Ver Todas Las Ofertas</Text>
                                 </TouchableOpacity>
                             </SectionContainer>
+
+                            <Carousel
+                                images={this.state.inferior}
+                                onTapImage={this.onTapImage.bind(this)}
+                            />
+
+                            <View style={{height:30}} />
+
                         </View>
                     }
                 />
@@ -362,6 +338,8 @@ export default class Home extends React.Component
                     <Image source={require("../../../assets/icons/operador.png")} style={{width:55, height:55}} resizeMode="contain"/>
                     <Text style={styles.ayudaText}>Ayuda</Text>
                 </TouchableOpacity>
+
+                <ProductDetail visible={this.state.showDetail} productID={this.state.productID} onClose={this.onCloseProductDetail.bind(this)} />
             </View>
         )
     }

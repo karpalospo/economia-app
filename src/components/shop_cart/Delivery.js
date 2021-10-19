@@ -24,7 +24,7 @@ export const Delivery = (props) =>
     } = props;
 
     useEffect(() => {
-        console.log(props.location)
+        //console.log(props.location)
         setLocation(props.location)
         return () => {}
     }, [])

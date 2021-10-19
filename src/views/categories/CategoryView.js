@@ -1,24 +1,22 @@
 import React from "react";
-import { View, StyleSheet, Text, FlatList, TouchableOpacity, Image, SectionList, AsyncStorage, Alert, Linking, DeviceEventEmitter, Modal, BackHandler, Dimensions } from "react-native";
+import { View, StyleSheet, Text, FlatList, TouchableOpacity, AsyncStorage, Alert } from "react-native";
 import _ from "lodash";
 
-import { COLORS, ON_MODIFY_CART_EVENT, ADS_GALLERY, FONTS } from "../../utils/constants";
+import { COLORS, FONTS } from "../../utils/constants";
 import Carousel from "../../components/Carousel";
-import AdvertisementSection from "../../components/ads/AdvertisementSection";
 import ProductCard from "../../components/product/VerticalProductCard";
 import { API, SEARCH_BY, PANEL_API } from "../../services/service";
 import { FormatProduct, FormatBannerItem } from "../../utils/formatter";
-import { AddToCart } from "../../components/shop_cart/AddToCart";
-import { AddToShopCart } from "../../utils/shopcartHelper";
 import { FullWidthLoading } from "../../components/loading/FullWidthLoading";
-import { CapitalizeWords } from "../../utils/helper";
 import { HeaderWithTitleAndBackButton } from "../../components/header/HeaderWithTitleAndBackButton";
 import EmptyState from "../../components/empty_state/EmptyState";
 import { sortByKey} from "../../utils/helper";
 import Header from "../../components/header/Header";
 
 
-const {width} = Dimensions.get('screen')
+import { ProductDetail } from "../../components/product/ProductDetail";
+
+
 
 export default class Category extends React.Component
 {
@@ -41,6 +39,10 @@ export default class Category extends React.Component
 
         addToCartVisible: false,
         selectedProduct: {},
+
+        productID: null,
+
+        showDetail: false
 
     }
 
@@ -150,12 +152,15 @@ export default class Category extends React.Component
 
     onTapSingleProduct = (productId, productName) => 
     {
-        this.props.navigation.navigate({
-            routeName: 'ProductDetail', 
-            params: {id: productId, searchBy: SEARCH_BY.CODE, name: productName,},
-            key: `product_${productId}`,
-        })
+     
+        this.setState({showDetail:true, productID: productId})
+        
     }
+
+    onCloseProductDetail = () => {
+        this.setState({showDetail: false})
+    }
+
 
 
     handleLoadMore = async () =>
@@ -252,7 +257,7 @@ export default class Category extends React.Component
                     } 
                 />
 
-
+                <ProductDetail visible={this.state.showDetail} productID={this.state.productID} onClose={this.onCloseProductDetail.bind(this)} />
             </View>
         )
     }

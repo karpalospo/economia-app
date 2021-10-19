@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, Image, Text, StyleSheet, FlatList, Alert, Modal, ActivityIndicator, AsyncStorage, DeviceEventEmitter, Dimensions, BackHandler } from "react-native";
+import { View, TouchableOpacity, Image, Text, StyleSheet, FlatList, Alert, Modal, ActivityIndicator, AsyncStorage, DeviceEventEmitter, Dimensions, BackHandler, TouchableOpacityBase } from "react-native";
 import { SafeAreaView, NavigationEvents } from 'react-navigation';
 
 import { COLORS, REDUCER_SET_ADDRESS, ON_MODIFY_ADDRESS_EVENT, REDUCER_SET_DEFAULT_ADDRESS, ON_CHANGE_DEFAULT_ADDRESS_EVENT, REST, SIGNIN_EVENT, FONTS } from '../../utils/constants';
@@ -9,7 +9,7 @@ import { API } from '../../services/service';
 import AddressStore from '../../reducers/address.reducer';
 import SessionStore from '../../reducers/session.reducer';
 import { SignInCard } from '../../components/signin/SignInCard';
-import { RegisterForPushNotificationsAsync } from '../../utils/expo_notification/expoPushNotification';
+
 import { HeaderWithTitleAndBackButton } from '../../components/header/HeaderWithTitleAndBackButton';
 
 const {height} = Dimensions.get('screen');
@@ -192,7 +192,7 @@ export default class AddressList extends React.Component
         if(!res.error)
         {
             DeviceEventEmitter.emit(SIGNIN_EVENT, {credentials: {email, password}, session:{token: res.message.data.auth_token, email: res.message.data.email, name: res.message.data.nombres, document: res.message.data.nit}})
-            await RegisterForPushNotificationsAsync(res.message.data.email)
+
         }
 
         return res.error
@@ -252,6 +252,7 @@ export default class AddressList extends React.Component
 
                                     <View style={styles.addressItemNameContainer}>
                                         <Text style={styles.addressItemNameText}>{this.showAddressName(item)}</Text>
+                                        {/*<TouchableOpacity onPress={() => {}}><Text>EDITAR</Text></TouchableOpacity>*/}
                                     </View>
 
                                     {/* <TouchableOpacity style={styles.addressItemActionButtonContainer}>
@@ -319,8 +320,8 @@ const styles = StyleSheet.create({
 
     addressContainer: {paddingHorizontal: 20, width: '100%'},
     addressItemContainer: {paddingVertical: 15, width: '100%', borderBottomWidth: 1, borderColor: COLORS._F4F4F4, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' /*<= Remove this when DeleteAddress endpoint available */},
-    addressItemNameContainer: {width: '80%', },
-    addressItemNameText: {fontSize: 16, color: COLORS._A5A5A5, fontFamily: FONTS.REGULAR},
+    addressItemNameContainer: {flexDirection:"row", justifyContent:"space-between", alignItems:"center"},
+    addressItemNameText: {fontSize: 16, color: COLORS._A5A5A5, fontFamily: FONTS.REGULAR, flex: 1},
     addressItemActionButtonContainer: {width: '10%', alignItems: 'center'},
     addressItemActionIcon: {width: 20, height: 20},
 

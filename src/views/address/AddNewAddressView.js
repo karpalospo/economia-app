@@ -5,9 +5,13 @@ import { SafeAreaView, NavigationEvents } from "react-navigation";
 import SessionStore from "../../reducers/session.reducer";
 import { API } from "../../services/service";
 import AddressStore from "../../reducers/address.reducer";
-import {Select, CheckIcon} from "native-base" 
+
 import { FormatLocationItem } from '../../utils/formatter';
 import { HeaderWithTitleAndBackButton } from "../../components/header/HeaderWithTitleAndBackButton";
+
+
+import { CustomSelectPicker } from '../components/CustomSelectPicker'
+
 
 export default class AddNewAddressView extends React.Component
 {
@@ -24,7 +28,8 @@ export default class AddNewAddressView extends React.Component
         language: null,
         locations:[],
         ciudad: {id:0},
-        color: COLORS._1B42CB
+        color: COLORS._1B42CB,
+        selectedLanguage: ""
     }
 
     async componentDidMount()
@@ -158,41 +163,42 @@ export default class AddNewAddressView extends React.Component
 
                     <View style={styles.row}>
                         <Text style={styles.label}>Ciudad</Text>
-                        <View style={{flex: 1}}>
-                            <Select
-                                selectedValue={this.state.ciudad}
-                                minWidth={200}
-                                onValueChange={async (itemValue) => {await this.setState({ciudad: itemValue}); this.onEdit()}}
-                                _selectedItem={{bg: COLORS._1B42CB, endIcon: <CheckIcon size={4} />}}
-                            >
-                                {this.state.locations.map((item, index) => <Select.Item key={"item" + index} label={item.name} value={index} />)}
-                                
-                            </Select>
+                        <View style={{flex: 1, borderWidth:1, borderColor:"#ddd", height:50, borderRadius:8}}>
+        
+                            <CustomSelectPicker
+                                items={this.state.locations.map((item, index) => ({id:index, label:item.name, value:index}))}
+                                style={{ justifyContent: 'center' }}
+                                onValueChange={itemValue => this.setState({ciudad: itemValue.value})}
+                                placeHolder="Seleccione..."
+                                InitialselectedItem={(this.state.currentLocation ? this.state.currentLocation.name : "Seleccione...")}
+                            />
+
                         </View>
                     </View>
 
                     <View style={styles.row}>
                         <Text style={styles.label}>Vía Principal</Text>
-                        <View style={{flex: 1}}>
-                            <Select
-                                selectedValue={this.state.tipovia}
-                                minWidth={100}
-                                onValueChange={async (itemValue) => {await this.setState({tipovia: itemValue}); this.onEdit()}}
-                                _selectedItem={{bg: COLORS._1B42CB, endIcon: <CheckIcon size={4} />}}
-                            >
-                                <Select.Item label="Carrera" value="Carrera" />
-                                <Select.Item label="Calle" value="Calle" />
-                                <Select.Item label="Avenida" value="Avenida" />
-                                <Select.Item label="Avenida Calle" value="Avenida Calle" />
-                                <Select.Item label="Autopista" value="Autopista" />
-                                <Select.Item label="Manzana" value="Manzana" />
-                                <Select.Item label="Diagonal" value="Diagonal" />
-                                <Select.Item label="Circular" value="Circular" />
-                                <Select.Item label="Transversal" value="Transversal" />
-                                <Select.Item label="Vía" value="Vía" />
-                                
-                            </Select>
-                            
+                        <View style={{flex: 1, borderWidth:1, borderColor:"#ddd", height:50, borderRadius:8}}>
+
+                             <CustomSelectPicker
+                                items={[
+                                    {id:0, label:"Carrera", value:"Carrera" },
+                                    {id:0, label:"Calle", value:"Calle" },
+                                    {id:0, label:"Avenida", value:"Avenida" },
+                                    {id:0, label:"Avenida Calle", value:"Avenida Calle" },
+                                    {id:0, label:"Autopista", value:"Autopista" },
+                                    {id:0, label:"Manzana", value:"Manzana" },
+                                    {id:0, label:"Diagonal", value:"Diagonal" },
+                                    {id:0, label:"Circular", value:"Circular"},
+                                    {id:0, label:"Transversal", value:"Transversal" },
+                                    {id:0, label:"Vía", value:"Vía" }
+                                ]}
+                                style={{ justifyContent: 'center' }}
+                                onValueChange={itemValue => this.setState({tipovia: itemValue.value})}
+                                placeHolder="Seleccione..."
+                                InitialselectedItem={(this.state.currentLocation ? this.state.currentLocation.name : "Seleccione...")}
+                            />
+
                         </View>
                         <TextInput
                             placeholderTextColor = {COLORS._657272}

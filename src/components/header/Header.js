@@ -16,7 +16,7 @@ import SessionStore from '../../reducers/session.reducer';
 import { SignInCard } from '../signin/SignInCard';
 import { FullWidthLoading } from '../loading/FullWidthLoading';
 import { GetTotalProductsInShopCart } from '../../utils/shopcartHelper';
-import { RegisterForPushNotificationsAsync } from '../../utils/expo_notification/expoPushNotification';
+
 
 export default class Header extends React.Component
 {
@@ -233,7 +233,7 @@ export default class Header extends React.Component
         if(!res.error)
         {
             DeviceEventEmitter.emit(SIGNIN_EVENT, {credentials: {email, password}, session:{token: res.message.data.auth_token, email: res.message.data.email, name: res.message.data.nombres, document: res.message.data.nit}})
-            await RegisterForPushNotificationsAsync(res.message.data.email)
+
         }
 
         return res.error
@@ -260,7 +260,7 @@ export default class Header extends React.Component
 
     onCancelSignIn = () => 
     {
-        this.setState({signInVisible: false}, () => this.props.navigation.goBack())
+        this.setState({signInVisible: false})
     }
     // ==================================================================
 

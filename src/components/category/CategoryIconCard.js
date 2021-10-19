@@ -28,7 +28,7 @@ export const CategoryIconCard = props =>
        "07": require('../../../assets/icons/cat6.png'),
     }
 
-    console.log(category.id, category.name)
+    //console.log(category.id, category.name)
 
     return(
         <View style={styles.categoryItemContainer}>

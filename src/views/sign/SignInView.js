@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, Text, TextInput, TouchableOpacity, Image, Platform, KeyboardAvoidingView, ScrollView, Dimensions, Modal, Alert, DeviceEventEmitter } from "react-native";
+import { View, StyleSheet, Text, TextInput, TouchableOpacity, Image, Platform, StatusBar, ScrollView, Dimensions, Modal, Alert, DeviceEventEmitter } from "react-native";
 import { COLORS, SIGNIN_EVENT, FONTS } from "../../utils/constants";
 import { API } from "../../services/service";
 import { SafeAreaView } from 'react-navigation';
@@ -65,7 +65,6 @@ export default class SignIn extends React.Component
         return(
             <SafeAreaView style={styles.container} forceInset={{top: "never", bottom: "never"}}>
 
-
                 <View style={styles.imageContainer}>
                     <TouchableOpacity onPress={() => this.props.navigation.navigate("Home")} style={{marginLeft:17, width:35, height:35, borderRadius:18, backgroundColor:"#ccc", alignItems:"center", justifyContent:"center"}}>
                         <Image source={volver} tintColor="#333" resizeMode='contain' style={{width:16, height:16}} />
@@ -122,7 +121,7 @@ export default class SignIn extends React.Component
                         <Text style={styles.signInButtonText}>Iniciar sesión</Text>
                     </TouchableOpacity>
                     
-                    <TouchableOpacity style={styles.signUpButton} onPress={() => this.props.navigation.navigate('SignUp')}>
+                    <TouchableOpacity style={styles.signUpButton} onPress={() => {this.props.navigation.navigate('SignUp')}}>
                         <Text style={styles.signUpButtonText}>Registrarse</Text>
                     </TouchableOpacity>
 

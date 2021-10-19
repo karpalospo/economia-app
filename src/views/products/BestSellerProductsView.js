@@ -10,7 +10,7 @@ import { sortByKey} from "../../utils/helper";
 import { HeaderWithTitleAndBackButton } from "../../components/header/HeaderWithTitleAndBackButton";
 import Header from '../../components/header/Header';
 
-const {width} = Dimensions.get('screen')
+import { ProductDetail } from "../../components/product/ProductDetail";
 
 export class BestSellerProductsView extends React.Component 
 {
@@ -25,6 +25,12 @@ export class BestSellerProductsView extends React.Component
         selectedProduct: {},
 
         ads: null,
+
+        
+        productID: null,
+
+        showDetail: false
+
     }
 
 
@@ -78,11 +84,13 @@ export class BestSellerProductsView extends React.Component
 
     onTapSingleProduct = (productId, productName) => 
     {
-        this.props.navigation.navigate({
-            routeName: 'ProductDetail', 
-            params: {id: productId, searchBy: SEARCH_BY.CODE, name: productName,},
-            key: `product_${productId}`,
-        })
+     
+        this.setState({showDetail:true, productID: productId})
+        
+    }
+
+    onCloseProductDetail = () => {
+        this.setState({showDetail: false})
     }
 
 
@@ -108,7 +116,8 @@ export class BestSellerProductsView extends React.Component
                         }
                     />  
                 </View>
-
+                
+                <ProductDetail visible={this.state.showDetail} productID={this.state.productID} onClose={this.onCloseProductDetail.bind(this)} />
 
             </View>
         )

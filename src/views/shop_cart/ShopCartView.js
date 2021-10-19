@@ -16,7 +16,7 @@ import { FullWidthLoading } from "../../components/loading/FullWidthLoading";
 import { ProductCard } from "../../components/product/CartHorizontalProductCard";
 import { PurchaseCard } from "../../components/shop_cart/PurchaseCard";
 import { PruchaseSummary } from "../../components/shop_cart/PurchaseSummary";
-import { RegisterForPushNotificationsAsync } from "../../utils/expo_notification/expoPushNotification";
+
 import AutoHeightWebView from 'react-native-autoheight-webview'
 import { Dimensions } from 'react-native'
 
@@ -617,7 +617,7 @@ export default class ShopCart extends React.Component {
         if(!res.error)
         {
             DeviceEventEmitter.emit(SIGNIN_EVENT, {credentials: {email, password}, session:{token: res.message.data.auth_token, email: res.message.data.email, name: res.message.data.nombres, document: res.message.data.nit}})
-            await RegisterForPushNotificationsAsync(res.message.data.email)
+
         }
 
         return res.error
@@ -875,7 +875,7 @@ const styles = StyleSheet.create({
     footerContainer: { position: 'absolute', width: '100%', flexDirection: 'row', justifyContent: 'space-between', backgroundColor: COLORS._F4F4F4, paddingVertical: 10, bottom: 0 },
     footerBackButton: { width: '45%', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 15, borderWidth: 2, borderColor: COLORS._1B42CB, borderRadius: 6, marginHorizontal: "2.5%" },
     footerBackButtonImage: { width: 10, height: 10, tintColor: COLORS._A5A5A5 },
-    footerBackButtonText: { fontSize: 15, color: COLORS._1B42CB, marginLeft: 10, fontFamily: FONTS.REGULAR},
+    footerBackButtonText: { fontSize: 13, color: COLORS._1B42CB, marginLeft: 10, fontFamily: FONTS.BOLD},
     footerAddToCartButton: { width: '45%', alignItems: 'center', padding: 15, backgroundColor: COLORS._1B42CB, borderRadius: 6,  marginHorizontal: "2.5%" },
-    footerAddToCartButtonText: { fontSize: 15, color: COLORS._FF2F6C, fontFamily: FONTS.REGULAR },
+    footerAddToCartButtonText: { fontSize: 13, color: COLORS._FF2F6C, fontFamily: FONTS.BOLD },
 })

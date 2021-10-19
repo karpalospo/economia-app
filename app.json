@@ -8,7 +8,7 @@
       "ios",
       "android"
     ],
-    "version": "3.0.8",
+    "version": "3.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
@@ -31,7 +31,7 @@
     },
     "android": {
       "package": "com.phonegap.laeconomia",
-      "versionCode": 500033
+      "versionCode": 500035
     },
     "notification": {
       "icon": "./assets/notification_icon.png",

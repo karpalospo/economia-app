@@ -13,6 +13,8 @@ const HTTP_STATUS_CODE = {
 }
 
 const HEADER_JSON =  { 'content-type': 'application/json' } 
+const HEADER_URL_ENCODE = {'Content-Type': 'application/x-www-form-urlencoded'}
+
 
 const HTTP_REQUEST_METHOD = {
     GET: 'GET',
@@ -390,16 +392,20 @@ export const API = {
     },
     POST: {
 
+        async init(data) {
+            return await fetchAsync(`${URL.server2}/init`, HTTP_REQUEST_METHOD.POST, { body: FormUrlEncoded(data), headers: HEADER_URL_ENCODE});
+        },
+
         async search(search, location) {
-            return await fetchAsync(`${URL.server2}/search`, HTTP_REQUEST_METHOD.POST, { body: FormUrlEncoded({search, location}), headers: {'Content-Type': 'application/x-www-form-urlencoded'}});
+            return await fetchAsync(`${URL.server2}/search`, HTTP_REQUEST_METHOD.POST, { body: FormUrlEncoded({search, location}), headers: HEADER_URL_ENCODE});
         },
 
         async checkEmail(email) {
-            return await fetchAsync(`${URL.HOST}/economia/site/users/sendemailrestore`, HTTP_REQUEST_METHOD.POST, { body: FormUrlEncoded({ email}), headers:  {'Content-Type': 'application/x-www-form-urlencoded'}});
+            return await fetchAsync(`${URL.HOST}/economia/site/users/sendemailrestore`, HTTP_REQUEST_METHOD.POST, { body: FormUrlEncoded({ email}), headers:  HEADER_URL_ENCODE});
         },
 
         async cambiarContrasena(email, code, password) {
-            return await fetchAsync(`${URL.HOST}/economia/site/users/restorepassv2`, HTTP_REQUEST_METHOD.POST, { body: FormUrlEncoded({ email, code, password}), headers:  {'Content-Type': 'application/x-www-form-urlencoded'}});
+            return await fetchAsync(`${URL.HOST}/economia/site/users/restorepassv2`, HTTP_REQUEST_METHOD.POST, { body: FormUrlEncoded({ email, code, password}), headers:  HEADER_URL_ENCODE});
         },
 
         async PerformSignIn (email, password)

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { View, ScrollView, Image, StyleSheet, Dimensions, Animated, TouchableOpacity, findNodeHandle } from 'react-native';
-
+import { COLORS } from "../../utils/constants";
 const { width } = Dimensions.get('window');
 // const height = width * .5;
 
@@ -20,7 +20,7 @@ export default class Carousel extends React.Component {
       
     static defaultProps = {
         images: [],
-        dotsColor: 'black',
+        dotsColor: COLORS._1B42CB,
         imageStyle: {
           width,
           height: 190,
@@ -82,15 +82,31 @@ export default class Carousel extends React.Component {
       }
     }
 
+    getImageIndex(index) {
+      let ret = {id:0, data:{}}
+      this.props.images.forEach(item => {
+        console.log(item.id)
+        if(item.id == index) ret = item
+      })
+      return ret
+    }
+
     render() {        
         // position will be a value between 0 and photos.length - 1 assuming you don't scroll pass the ends of the ScrollView
         this.position = Animated.divide(this.scrollX, this.state.carouselImageDefaultWidth > 0 ? this.state.carouselImageDefaultWidth : width);
 
-        const { images } = this.props;
+        let _images = []
+        const { images, images2 } = this.props;
 
-
+        if(images2) _images = images2
+        else {
+          images.forEach(item => {
+            if(item.mobile && item.mobile != "") _images.push({source: { uri:item.mobile}, id: item.id}) 
+          })
+          
+        }
          
-        if (images && images.length) {
+        if (_images && _images.length) {
             return (
                 <View style={[styles.scrollContainer]}>
                   <ScrollView
@@ -129,19 +145,19 @@ export default class Carousel extends React.Component {
                       scrollEventThrottle={16} // this will ensure that this ScrollView's onScroll prop is called no faster than 16ms between each function call
 
                   >
-                    {images.map((image, index) => (
+                    {_images.map((image, index) => (
                       <TouchableOpacity 
                         activeOpacity={1} 
                         ref={(ref) => this[`image_${index}`] = ref} 
                         style={[this.props.imageContainerStyle, {height: this.state.carouselImageDefaultHeight}]} 
-                        onPress={() => {this.props.onTapImage(image)}} key={index}
+                        onPress={() => {this.props.onTapImage(this.getImageIndex(image.id))}} key={index}
                       >
                           <Image style={{height: this.state.carouselImageDefaultHeight, width: this.state.carouselImageDefaultWidth}} source={image.source} resizeMode={this.props.imageResizeMode}/>
                       </TouchableOpacity>
                     ))}
                   </ScrollView>
 
-                  {(images.length > 1 && this.props.showIndicator) &&
+                  {(_images.length > 1 && this.props.showIndicator) &&
                   <View style={{alignItems: 'center', width: '100%', height: 10, justifyContent: 'center', marginTop: 5 }}>
                       <View style={{ flexDirection: 'row', justifyContent: 'center', width: '30%', alignItems: 'center' }}>
                       {images.map((_, i) => { // the _ just means we won't use that parameter

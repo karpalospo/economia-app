@@ -15,7 +15,7 @@ export const PurchaseCard = (props) =>
 
                 <Image source = {require('../../../assets/icons/status/success.png')} style = {styles.cardImage} resizeMode = 'contain' />
 
-                <Text style={styles.cardDescriptionText}>Nuestro personal de servicio a domicilio lo estará conectando para confirmar los datos de su pedido.</Text>
+                <Text style={styles.cardDescriptionText}>Nuestro personal de servicio a domicilio lo estará contactando para confirmar los datos de su pedido.</Text>
                 </View>}
 
                 {exito == "R" && <View>

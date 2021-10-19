@@ -13,7 +13,7 @@ import AddressStore from './reducers/address.reducer';
 import { CapitalizeWord } from './utils/helper';
 import { SetProductsInShopCart } from './utils/shopcartHelper';
 import Toast from "react-native-easy-toast";
-import { NativeBaseProvider } from 'native-base';
+
 
 
 const AppNavigator = createSwitchNavigator({
@@ -212,7 +212,7 @@ export default class App extends React.Component
   render()
   {
     return(
-      <NativeBaseProvider>
+
       <View style={{ flex: 1}}>
         
         <AppContainer screenProps={{...this.state, groupCategoriesVisible: (groupId) => this.groupCategoriesVisible(groupId), categorySubCategoriesVisible: (categoryId) => this.categorySubCategoriesVisible(categoryId)}} />
@@ -235,7 +235,7 @@ export default class App extends React.Component
           fadeOutDuration={1000}
         />
       </View>
-      </NativeBaseProvider>
+
     )
   }
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Text, StyleSheet, SectionList, Alert, TouchableOpacity } from "react-native";
+import { View, TextInput, Text, StyleSheet, Alert, TouchableOpacity, AsyncStorage, Modal, Image } from "react-native";
 import { COLORS, FONTS, BONUS } from '../../utils/constants';
 import { ToCurrencyFormat } from '../../utils/helper';
 import { FlatList } from 'react-native-gesture-handler';
@@ -9,8 +9,24 @@ import SessionStore from '../../reducers/session.reducer';
 import { FullWidthLoading } from '../loading/FullWidthLoading';
 import { FormatCoupon, FormatProductForBonus } from '../../utils/formatter';
 import { FullScreenLoading } from '../loading/FullScreenLoading';
-import { Select, CheckIcon } from "native-base"
 import { Delivery } from "../../components/shop_cart/Delivery";
+import moment from "moment";
+import 'moment/min/moment-with-locales' 
+
+
+const format_date = (type, date) => {
+    switch(type) {
+        case "short": return moment(date).format("MMM DD")
+        case "compact": return moment(date).format("YYYY-MM-DD")
+        case "compact2": return moment(date).format("DD/MM/YYYY")
+        case "normal": return moment(date).format("dddd, DD [de] MMMM [de] YYYY")
+        case "normal+time": return moment(date).format("dddd, DD [de] MMMM [de] YYYY [a las] h:mm a")
+        case "fromnow": return moment(moment(date)).fromNow(true)
+    }
+}
+
+const volver = require('../../../assets/icons/times.png')
+const down = require('../../../assets/icons/dropdown_arrow.png')
 
 export const PaymentMethod = (props) => 
 {
@@ -28,11 +44,35 @@ export const PaymentMethod = (props) =>
     const [loading, setLoading] = useState(false)
     const [loadingBonus, setLoadingBonus] = useState(false)
     const [bonusDiscount, setBonusDiscount] = useState(0)
+    const [cuponesVisible, setCuponesVisible] = useState(false)
+
+    const [cupones, setCupones] = useState([])
 
     useEffect(() => {
         onChangePaymentMethod(0)
         getBonuses()
     }, [])
+
+    useEffect(() => {
+        if(cupones.length > 0) return
+
+        let ret_cupones = [];
+
+        (async function(){
+            const location = JSON.parse(await AsyncStorage.getItem('location'));
+
+            const res = await API.POST.init({location: location.id, page: "order"})
+                
+            if(!res.error) {
+                Object.keys(res.message.coupons).forEach(key => {
+                    ret_cupones.push(res.message.coupons[key])
+                })
+                setCupones(ret_cupones)
+            }
+        })()
+
+    }, [cupones])
+
 
 
     const getBonuses = async () =>
@@ -99,7 +139,7 @@ export const PaymentMethod = (props) =>
     }
 
 
-    const checkCoupon = async() => 
+    const checkCoupon = async(coupon) => 
     {
 
         if(coupon == "") return
@@ -173,6 +213,12 @@ export const PaymentMethod = (props) =>
     }
 
 
+    const setCupon = async (item) => {
+        setCoupon(item.nombrecupon)
+        checkCoupon(item.nombrecupon)
+        setCuponesVisible(false)
+    }
+
     return (
         <View style = {styles.container}>
             
@@ -198,7 +244,7 @@ export const PaymentMethod = (props) =>
                                     onChangeText={coupon => setCoupon(coupon)}
                                     value={coupon}
                                 />
-                                <TouchableOpacity style={styles.botonVerde} onPress={() => checkCoupon()}>
+                                <TouchableOpacity style={styles.botonVerde} onPress={() => checkCoupon(coupon)}>
                                     <Text style={styles.botonVerdeText}>APLICAR</Text>
                                 </TouchableOpacity>
                                 {loading &&
@@ -207,20 +253,10 @@ export const PaymentMethod = (props) =>
                                 </View>}
                             </View>
 
-                            <View style={{paddingHorizontal:40}}>    
-                                <Select
-                                    accessibilityLabel="Cupones Disponibles"
-                                    placeholder="Cupones Disponibles"
-                                    onValueChange={(v) => setCoupon(v)}
-                                    _selectedItem={{
-                                        bg: COLORS._1B42CB
-                                    }}
-                                >
-                                    <Select.Item label="WEB3K" value="WEB3K" />
-                                    <Select.Item label="WEB7K" value="WEB7K" />
-                                    <Select.Item label="WEB13K" value="WEB13K" />
-                                </Select>
-                            </View>
+                            <TouchableOpacity onPress={() => setCuponesVisible(true)} style={{padding:10, borderWidth: 1, borderColor: "#ccc", marginHorizontal:30, marginTop:10, borderRadius:8, flexDirection:"row", justifyContent:"center", alignItems:"center"}}>
+                                <Text style={{textAlign:"center", color: "#666"}}>Ver Cupones Disponibles </Text>
+                                <Image source={down} tintColor="#999" resizeMode='contain' style={{width:12, height:12, marginLeft:5}} />
+                            </TouchableOpacity>
 
                             <View style={{height:30}}></View>
                         
@@ -326,6 +362,37 @@ export const PaymentMethod = (props) =>
             />
 
 
+            <Modal
+                animationType="slide"
+                visible={cuponesVisible}
+            >
+                <View style={{padding:10}}>
+                    <View style={{flexDirection:"row", justifyContent:"flex-end"}}>
+                        <TouchableOpacity onPress={() => setCuponesVisible(false)} style={{width:35, height:35, borderRadius:18, backgroundColor:"#222", alignItems:"center", justifyContent:"center"}}>
+                            <Image source={volver} tintColor="white" resizeMode='contain' style={{width:16, height:16}} />
+                        </TouchableOpacity>
+                    </View>
+                    <FlatList
+                        listKey="cupones"
+                        keyExtractor={(item, index) => `method_${index}`}
+                        data={cupones}
+                        style={{marginTop:5, marginBottom:40}}
+                        renderItem={({ item, index }) => {
+                            return (
+                                <TouchableOpacity onPress={() => setCupon(item)} style={{padding: 10, paddingHorizontal:20, backgroundColor: "#FF4747", margin:10, borderRadius:8}}>
+                                    <View style={{flexDirection: "row", justifyContent:"space-between"}}>
+                                        <Text style={{color:"white", fontSize:20, fontWeight:"bold"}}>{item.nombrecupon}</Text>
+                                        <Text style={{color:"white", fontSize:20, fontWeight:"bold"}}>{ToCurrencyFormat(item.valorcupon)}</Text>
+                                    </View>
+                                    <Text style={{paddingVertical:10, color:"white"}}>{ToCurrencyFormat(item.valorcupon)} de descuento para compras mínimas de {ToCurrencyFormat(item.vlrminimo)}. Válido hasta {format_date("normal+time", item.hasta, )}</Text>
+                                    <Text style={{color:"white", paddingBottom:10}}>Cupón válido para redimir máximo {item.maximaventacliente} veces por usuario en un mismo día.</Text>
+                                    <Text style={{color:"white"}}>Aplican condiciones y restricciones</Text>
+                                </TouchableOpacity>
+                            )
+                        }}
+                    />
+                </View>
+            </Modal>
 
         </View>
     )
@@ -354,7 +421,7 @@ const styles = StyleSheet.create({
     customerSupportText: {fontSize: 16, color: COLORS._657272, textAlign: 'center'},
     customerSupportScheduleText: {fontSize: 16, color: COLORS._657272, textAlign: 'center', fontFamily: FONTS.BOLD},
 
-    paymentMethodContainer: { paddingVertical: 10, paddingHorizontal: 40 },
+    paymentMethodContainer: { paddingVertical: 10, paddingHorizontal: 20 },
     paymentMethodTitleText: {fontSize: 16, color: COLORS._657272, marginBottom: 10, fontFamily: FONTS.BOLD},
     paymentMethodItemContainer: {marginHorizontal: 10, marginVertical: 10},
     paymentMethodText: {fontSize: 20, fontFamily: FONTS.BOLD, color: COLORS._657272},

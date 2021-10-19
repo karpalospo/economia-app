@@ -4,12 +4,13 @@ import { SafeAreaView, } from "react-navigation";
 import { createBottomTabNavigator } from "react-navigation-tabs";
 import { createStackNavigator,  } from "react-navigation-stack";
 import { createDrawerNavigator } from "react-navigation-drawer";
+import SignUp from '../../views/sign/SignUpView';
+import SignIn from '../../views/sign/SignInView';
 
 import { expo } from "../../app.json";
 
 import SearchProduct from "../views/products/SearchProductView";
 import { HomeStack } from "./home/HomeRoutes";
-import { SignRoutes } from "./sign/SignRoutes";
 import { COLORS, SHOW_LOCATION_EVENT, SIGNOUT_EVENT, FONTS } from "../utils/constants";
 import { ProfileRoutes } from "./profile/ProfileRoutes";
 
@@ -118,12 +119,22 @@ const BottomNavStack = createBottomTabNavigator({
 const InAppStack = createStackNavigator({
   
     SignIn: {
-        screen: SignRoutes,
+        screen: SignIn,
         navigationOptions: ({ navigation }) => {
-        const { params = {} } = navigation.state;
-        return {
-            headerShown: false,
-        }
+          const { params = {} } = navigation.state;
+          return {
+              headerShown: false,
+          }
+        },
+    },
+
+    SignUp: {
+        screen: SignUp,
+        navigationOptions: ({ navigation }) => {
+          const { params = {} } = navigation.state;
+          return {
+              headerShown: false,
+          }
         },
     },
     Home: {

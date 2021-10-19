@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, FlatList, AsyncStorage, Alert, Text } from "react-native";
+import { View, StyleSheet, FlatList, AsyncStorage, Alert, Text, StatusBar } from "react-native";
 import { NavigationEvents } from "react-navigation";
 import _ from "lodash";
 

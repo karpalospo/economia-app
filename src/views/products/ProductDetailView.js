@@ -210,7 +210,7 @@ export default class ProductDetail extends React.Component
                         {!this.state.loading &&
                         <Carousel  
                             imageStyle = {{height: 240,}}
-                            images={this.state.gallery}
+                            images2={this.state.gallery}
                             imageResizeMode={'contain'} 
                             dotsColor={COLORS._1B42CB}
                         />}

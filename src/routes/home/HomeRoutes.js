@@ -11,7 +11,6 @@ import AllSponsoredBrands from '../../views/brand/AllSponsoredBrandsView';
 import AddNewAddressView from '../../views/address/AddNewAddressView';
 import { BestSellerProductsView } from '../../views/products/BestSellerProductsView';
 import DictionaryView from '../../views/dictionary/DictionaryView';
-import SignUp from '../../views/sign/SignUpView';
 import GroupOfCategories from '../../views/categories/GroupOfCategoriesView';
 
 export const HomeStack = createStackNavigator({
@@ -100,10 +99,7 @@ export const HomeStack = createStackNavigator({
         headerShown: false,
       })
     }, 
-    SignUpFromCard:
-    {
-      screen: SignUp,
-    },
+
     
 }, {
     initialRouteName: 'Home',

@@ -1,19 +1,20 @@
 import React from 'react';
-import { Text, View, StyleSheet, TouchableOpacity, FlatList, DeviceEventEmitter, Image, Modal } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, FlatList, DeviceEventEmitter, Image } from 'react-native';
 import { NavigationEvents } from "react-navigation";
 
-import { COLORS, ON_SELECT_LOCATION_EVENT, FONTS, ON_MODIFY_CART_EVENT } from '../../utils/constants';
-import { API, SEARCH_BY } from '../../services/service';
+import { COLORS, FONTS, ON_MODIFY_CART_EVENT } from '../../utils/constants';
+import { API } from '../../services/service';
 import Header from '../../components/header/Header';
 import EmptyState from '../../components/empty_state/EmptyState';
-import LocationStore from '../../reducers/location.reducer';
 import { FormatProduct } from '../../utils/formatter';
 import { FullWidthLoading } from '../../components/loading/FullWidthLoading';
 import ProductCard from "../../components/product/VerticalProductCard";
-import { CalculateMarginTopForAndroid } from '../../utils/ui_helper';
 import { sortByKey} from "../../utils/helper";
-import { AddToCart } from "../../components/shop_cart/AddToCart";
 import { AddToShopCart} from "../../utils/shopcartHelper";
+
+import { ProductDetail } from "../../components/product/ProductDetail";
+
+
 
 export default class SearchProduct extends React.Component {
 
@@ -35,6 +36,12 @@ export default class SearchProduct extends React.Component {
 
         addToCartVisible: false,
         selectedProduct: {},
+
+        search_label: "",
+
+        productID: null,
+
+        showDetail: false
 
     }
 
@@ -66,7 +73,8 @@ export default class SearchProduct extends React.Component {
 
         this.setState({loading: true, productList: []})
         const res = await API.POST.search(search, location);
-        
+
+        this.setState({search_label: res.message.search_label})
         let productList = [];
 
         if(!res.error)
@@ -90,15 +98,17 @@ export default class SearchProduct extends React.Component {
  
     }
 
+
     onTapSingleProduct = (productId, productName) => 
     {
-        this.props.navigation.navigate({
-            routeName: 'ProductDetail', 
-            params: {id: productId, searchBy: SEARCH_BY.CODE, name: productName,},
-            key: `product_${productId}`,
-        })
+     
+        this.setState({showDetail:true, productID: productId})
+        
     }
 
+    onCloseProductDetail = () => {
+        this.setState({showDetail: false})
+    }
 
     render() {
 
@@ -113,23 +123,24 @@ export default class SearchProduct extends React.Component {
                 
                 {(this.state.searchedProduct != '' && this.state.productList.length === 0 && !this.state.loading) &&
                     <View style={styles.emptyContainer}>
-                        <EmptyState mainTitle='¡Lo sentimos!' subTitle={`No encontramos resultados para '${this.state.searchedProduct}'`} />
+                        <EmptyState mainTitle='¡Lo sentimos!' subTitle={`No encontramos resultados para '${this.state.search_label}'`} />
                     </View>
                 }
 
                 {this.state.productList.length > 0 &&
                 <View style={{flex: 1}}>
                     <View style={styles.resultadoCont}>
-                        <TouchableOpacity onPress={() => this.props.navigation.navigate("Home")}>
+                        <TouchableOpacity onPress={() => this.props.navigation.goBack()}>
                             <View style={{flexDirection:"row", width:100, alignItems:"center"}}>
                                 <Image source={require('../../../assets/icons/volver.png')} tintColor="#444" resizeMode='contain' style={{width:16, height:16, marginRight:8}} />
                                 <Text style={{color:"#666"}}>REGRESAR</Text>
                             </View>
                         </TouchableOpacity>
+                        <View style={{height:10}} />
                         <View style={{flexDirection:"row", alignItems:"center", paddingRight:10}}>
                             <Text style={{fontSize: 16, color: "#444", fontFamily: FONTS.BOLD}}>{this.state.productList.length}</Text>
                             <Text style={{fontSize: 16, color: "#666"}}> resultados para </Text>
-                            <Text style={{fontSize: 16, color: COLORS._1B42CB, fontFamily: FONTS.BOLD}}>{this.state.searchedProduct}</Text>
+                            <Text style={{fontSize: 16, color: COLORS._1B42CB, fontFamily: FONTS.BOLD}}>{this.state.search_label}</Text>
                         </View>
                     </View>
                     <FlatList
@@ -144,7 +155,7 @@ export default class SearchProduct extends React.Component {
                     />
                 </View>
                 }   
-                
+                <ProductDetail visible={this.state.showDetail} productID={this.state.productID} onClose={this.onCloseProductDetail.bind(this)} />
             </View>
         )
     }
@@ -173,7 +184,7 @@ export default class SearchProduct extends React.Component {
 const styles = StyleSheet.create({
 
     container: {flex: 1},
-    resultadoCont: {flexDirection:"row", paddingLeft:15, backgroundColor:"white", padding:8, borderBottomWidth: 0.5, borderBottomColor: "#999", justifyContent:"space-between"},
+    resultadoCont: {paddingLeft:15, backgroundColor:"white", padding:8, borderBottomWidth: 0.5, borderBottomColor: "#999", justifyContent:"space-between"},
     loadingContainer: {width: '100%', alignItems: 'center', padding: 10},
     
     productsContainer: {justifyContent: 'space-between', width: '100%', alignItems: 'flex-start', paddingHorizontal: '10%',marginTop: "0.1%"},

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet, FlatList, AsyncStorage, Alert } from "react-native";
+import { View, Text, Image, TouchableOpacity, StyleSheet, FlatList, AsyncStorage, StatusBar } from "react-native";
 
 import { COLORS, FONTS, ORDER_STATUS } from "../../utils/constants";
 import { FormatDate } from "../../utils/helper";

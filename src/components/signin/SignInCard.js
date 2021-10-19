@@ -26,7 +26,7 @@ export const SignInCard = (props) =>
     onPressSignUp = () =>
     {
         onCancel()
-        navigation.navigate('SignUpFromCard')
+        navigation.navigate('SignUp')
     }
  
     return(
@@ -94,7 +94,7 @@ export const SignInCard = (props) =>
                         <Text style={styles.positiveButtonText}>Iniciar sesión</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.negativeButton} onPress={() => onPressSignUp()}>
+                    <TouchableOpacity style={styles.negativeButton} onPress={onPressSignUp}>
                         <Text style={styles.negativeButtonText}>Registrarse</Text>
                     </TouchableOpacity>
 

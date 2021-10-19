@@ -134,8 +134,8 @@ android {
         applicationId 'com.phonegap.laeconomia'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 500031
-        versionName "3.0.6"
+        versionCode 500033
+        versionName "3.0.8"
     }
     splits {
         abi {

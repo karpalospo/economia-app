@@ -6,7 +6,7 @@ import { FullScreenLoading } from "../../components/loading/FullScreenLoading";
 import SessionStore from "../../reducers/session.reducer";
 import { SignInCard } from "../../components/signin/SignInCard";
 import { InputCard } from "../../components/profile/InputCard";
-import { RegisterForPushNotificationsAsync } from "../../utils/expo_notification/expoPushNotification";
+
 
 export default class EditProfileView extends React.Component
 {
@@ -183,7 +183,7 @@ export default class EditProfileView extends React.Component
         if(!res.error)
         {
             DeviceEventEmitter.emit(SIGNIN_EVENT, {credentials: {email, password}, session:{token: res.message.data.auth_token, email: res.message.data.email, name: res.message.data.nombres, document: res.message.data.nit}})
-            await RegisterForPushNotificationsAsync(res.message.data.email)
+
         }
 
         return res.error
