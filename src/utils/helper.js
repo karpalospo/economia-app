@@ -1,8 +1,20 @@
-import { Platform, Dimensions } from "react-native";
+import moment from "moment";
+import 'moment/min/moment-with-locales' 
 
 export const Truncate = (text, limit = 20) => 
 {
     return text.length > limit ? `${text.substr(0, limit)}...` : text;
+}
+
+export const format_date = (type, date) => {
+    switch(type) {
+        case "short": return moment(date).format("MMM DD")
+        case "compact": return moment(date).format("YYYY-MM-DD")
+        case "compact2": return moment(date).format("DD/MM/YYYY")
+        case "normal": return moment(date).format("dddd, DD [de] MMMM [de] YYYY")
+        case "normal+time": return moment(date).format("dddd, DD [de] MMMM [de] YYYY [a las] h:mm a")
+        case "fromnow": return moment(moment(date)).fromNow(true)
+    }
 }
 
 export const CapitalizeWord = (word) => 
@@ -39,7 +51,7 @@ export const CapitalizeWords = (text) =>
  * @param {String} currencyPrefix // Currency prefix. Default '$'
  * @param {String} currencySuffix // Default currency suffix like 'USD'. Default ''
  */
-export const ToCurrencyFormat = (number, {currencyPrefix = '$', currencySuffix = '', decimalCount = 0, decimal = ",", thousands = "."} = {} ) => {
+export const f = (number, {currencyPrefix = '$', currencySuffix = '', decimalCount = 0, decimal = ",", thousands = "."} = {} ) => {
 
     try {
         decimalCount = Math.abs(decimalCount);
@@ -65,29 +77,6 @@ export const sortByKey = (data, key, sort) => {
     else return data.sort((a,b) => (a[key] > b[key]) ? 1 : ((b[key] > a[key]) ? -1 : 0));
 }
 
-
-export const IsIphoneX = () =>  
-{
-    const dim = Dimensions.get('window');
-    
-    return (
-      // This has to be iOS
-      Platform.OS === 'ios' &&
-      
-      // Check either, iPhone X or XR
-      (isIPhoneXSize(dim) || isIPhoneXrSize(dim))
-    );
-}
-  
-const isIPhoneXSize = (dim) => 
-{
-    return dim.height == 812 || dim.width == 812;
-}
-  
-const isIPhoneXrSize = (dim) => 
-{
-    return dim.height == 896 || dim.width == 896;
-}
 
 
 export const ValidateEmail = (email) =>
@@ -144,18 +133,6 @@ export const FormatDate = (date) =>
     return (date.getUTCDate() < 10 ? "0" + date.getUTCDate() : date.getUTCDate()) + "/" + ((date.getUTCMonth() + 1) < 10 ? "0" + (date.getUTCMonth() + 1) : (date.getUTCMonth() + 1)) + "/" + date.getUTCFullYear() + "  " + strTime;
 }
 
-/**
- * Checks if the current date at 00:00:00 is greater than given date (lastDate)
- * 
- * @param {Date} lastDate 
- */
-export const IsAnotherDay = (lastDate) =>
-{
-    let currentDate = new Date()
-    currentDate.setHours(0, 0, 0)
-    
-    return currentDate.getTime() > lastDate.getTime()
-}
 
 export const IsExcludedCategory = (categoryId) =>
 {

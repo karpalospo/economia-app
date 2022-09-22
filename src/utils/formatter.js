@@ -1,6 +1,5 @@
-import { URL } from "../services/service";
+import { URL } from "../services/services";
 import { ParseStrDate, FormatDate } from "./helper";
-import { BAG_TAX_ID, DELIVERY_TAX_ID } from "./constants";
 
 export const FormatBrandItem = (brand) =>
 {
@@ -181,8 +180,8 @@ export const FormatProductOrder = (order) =>
         tax: order.porcentaje_iva,
         phone: order.telefono,
         type: order.tipo,
-        image: order.codigo == "999992" ? require('../../assets/icons/payment/delivery.png') : {uri: `${URL.HOST}/economia/site/img/${order.codigo}.png`},
-        bigImage: order.codigo == "999992" ? require('../../assets/icons/payment/delivery.png') : {uri: `${URL.HOST}/economia/site/img/1x/${order.codigo}.jpg`},
+        image: order.codigo == "999992" ? require('../../assets/delivery.png') : {uri: `${URL.HOST}/economia/site/img/${order.codigo}.png`},
+        bigImage: order.codigo == "999992" ? require('../../assets/delivery.png') : {uri: `${URL.HOST}/economia/site/img/1x/${order.codigo}.jpg`},
         unit: order.valor_contenido ? order.valor_contenido : '',
         pricePerUnit: order.precioMedida ? order.precioMedida : 0,
     }
@@ -220,14 +219,9 @@ export const FormatProductForOrderDetail = (product) =>
 const setProductImage = (id, bigImage = false) => 
 {
     let image = bigImage ? {uri: `${URL.HOST}/economia/site/img/1x/${id}.jpg`} : {uri: `${URL.HOST}/economia/site/img/${id}.png`}
-    if(id == BAG_TAX_ID)
-    {
+
         image = require('../../assets/icons/product/noimage.png')
-    }
-    else if(id == DELIVERY_TAX_ID)
-    {
-        image = require('../../assets/icons/payment/delivery.png')
-    }
+
 
     return image
 }
@@ -262,46 +256,5 @@ export const FormatProductForBonus = (product) =>
     }
 }
 
-export const FormatCoupon = (coupon) => 
-{
-    return {
-        document: coupon.Cedula,
-        type: coupon.Condicion,
-        description: coupon.Descripcion,
-        startDate: coupon.Desde,
-        status: coupon.Estado,
-        modifiedAt: coupon.FechaActualizacion,
-        endDate: coupon.Hasta,
-        id: coupon.IdCupon,
-        name: coupon.NombreCupon,
-        strType: coupon.TipoCupon, // <= Type of coupon as string
-        value: coupon.ValorCupon, // <= Amount of coupon
-        minAmount: coupon.VlrMinimo, // <= Min. amount of the purchase/order to apply this coupon
-        isValid: false,
-    }
-}
 
 
-export const UnformatCoupon = (coupon) => 
-{
-    if(coupon.type == undefined || coupon.type == null)
-    {
-        return { Aplica: false }
-    }
-
-    return {
-        Cedula: coupon.document,
-        Condicion: coupon.type,
-        Descripcion:coupon.description,
-        Desde: coupon.startDate,
-        Estado: coupon.status,
-        FechaActualizacion: coupon.modifiedAt,
-        Hasta: coupon.endDate,
-        IdCupon: coupon.id,
-        NombreCupon: coupon.name,
-        TipoCupon: coupon.strType,
-        ValorCupon: coupon.value,
-        VlrMinimo: coupon.minAmount,
-        Aplica: coupon.isValid,
-    }
-}

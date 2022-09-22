@@ -1,7 +1,9 @@
 import React from 'react';
-import { View, Modal, DeviceEventEmitter, AsyncStorage, Alert, Platform, StatusBar, Text, StyleSheet } from 'react-native';
-import { Notifications, } from 'expo';
 
+
+
+import { View, Modal, DeviceEventEmitter, Alert, Platform, StatusBar, Text, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createSwitchNavigator, createAppContainer, } from "react-navigation";
 import { SHOW_LOCATION_EVENT, ON_SELECT_LOCATION_EVENT, REDUCER_SAVE_LOCATION, SET_CATEGORIES_EVENT, REDUCER_RESET_SESSION, SIGNIN_EVENT, SIGNOUT_EVENT, REDUCER_SET_SESSION, REDUCER_SET_ADDRESS, ON_MODIFY_CART_EVENT, FONTS, COLORS } from './utils/constants';
 import Entry from './views/entry/Entry';
@@ -12,7 +14,6 @@ import InAppStack from './routes/InAppRoutes';
 import AddressStore from './reducers/address.reducer';
 import { CapitalizeWord } from './utils/helper';
 import { SetProductsInShopCart } from './utils/shopcartHelper';
-import Toast from "react-native-easy-toast";
 
 
 
@@ -23,7 +24,6 @@ const AppNavigator = createSwitchNavigator({
     initialRouteName: 'Entry',
 })
 
-let _toast = {}
 
 const AppContainer = createAppContainer(AppNavigator);
 
@@ -46,36 +46,20 @@ export default class App extends React.Component
   {
     super(props)
 
-    this.initializeEvents()
+    //this.initializeEvents()
   }
 
   async componentDidMount()
   {
     StatusBar.setHidden(false);
-    StatusBar.setBarStyle(Platform.OS === 'ios' ? 'dark-content' : 'default');
+    StatusBar.setBarStyle(Platform.OS === 'ios' ? 'dark-content' : 'dark-content');
 
-    await this.initializeReducers()
+    //await this.initializeReducers()
 
-    this._notificationSubscription = Notifications.addListener(this._handleNotification);
+
   }
 
-  UNSAFE_componentWillUnmount()
-  {
-    this.handleChooseLocationModal.remove()
-    this.handleGetCategories.remove()
-    this.handleSignIn.remove()
-    this.handleSignOut.remove()
-    this.handleModifyCart.remove()
-  }
 
-  initializeEvents = () => 
-  {
-    this.handleChooseLocationModal  = DeviceEventEmitter.addListener(SHOW_LOCATION_EVENT, this.handleLocationEvent)
-    this.handleGetCategories        = DeviceEventEmitter.addListener(SET_CATEGORIES_EVENT, this.handleGetCategoriesEvent)
-    this.handleSignIn               = DeviceEventEmitter.addListener(SIGNIN_EVENT, this.handleSignInEvent)
-    this.handleSignOut              = DeviceEventEmitter.addListener(SIGNOUT_EVENT, this.handleSignOutEvent)
-    this.handleModifyCart           = DeviceEventEmitter.addListener(ON_MODIFY_CART_EVENT, this.onModifyCart)
-  }
 
 
   initializeReducers = async () => 
@@ -128,12 +112,12 @@ export default class App extends React.Component
   {
     if(params.quantity > 0)
     {
-      this.toast.show(
+      /*this.toast.show(
         <View style={styles.toastContainer}>
           <Text style={styles.toastText}>Producto agregado al carrito</Text>
         </View>, 
         1200
-      )
+      )*/
     }
   }
 
@@ -227,13 +211,13 @@ export default class App extends React.Component
             <LocationSelector onSelectLocation = {(selectedLocation) => this.onSelectLocation(selectedLocation) } onCancel={() => this.setState({chooseLocationModalVisible: false})} />
         </Modal>
 
-        <Toast 
+        {/*<Toast 
           ref={(toast) => this.toast = toast}
           positionValue={100}
           style={styles.toastWrapper}
           fadeInDuration={1000}
           fadeOutDuration={1000}
-        />
+    />*/}
       </View>
 
     )
@@ -241,9 +225,3 @@ export default class App extends React.Component
 
 }
 
-
-const styles = StyleSheet.create({
-  toastWrapper: {width: '100%', padding: 15, paddingBottom: 50, borderRadius: 15, backgroundColor: COLORS._FFFFFF, alignItems: 'center', justifyContent: 'flex-start', elevation: 5, shadowColor: COLORS._BABABA, shadowOffset: {width: 0, heigth: 2}, shadowOpacity: 7, shadowRadius: 15,},
-  toastContainer: {width: '90%', borderRadius: 25, backgroundColor: COLORS._0A1E63, paddingVertical: 15, alignItems: 'center' },
-  toastText: { fontSize: 15, fontFamily: FONTS.BOLD, color: COLORS._FFFFFF},
-})

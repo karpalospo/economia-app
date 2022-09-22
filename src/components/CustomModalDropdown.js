@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, View, TouchableWithoutFeedback, Text, TouchableOpacity, FlatList } from 'react-native';
-import { useCustomBackHandler } from '../hooks/useCustomBackHandler';
+
 
 
 
@@ -15,7 +15,7 @@ export const CustomModalDropdown = ({
     onCloseModal = () => { },
     onRequestClose = () => { }
 }) => {
-    useCustomBackHandler({ preventBackEvent: true });
+
 
     return (
         <Modal
@@ -27,7 +27,7 @@ export const CustomModalDropdown = ({
         >
 
             <TouchableWithoutFeedback onPress={onCloseModal}>
-                <View style={{ flex: 1, backgroundColor: "#0A1E63", justifyContent: 'center', }} >
+                <View style={{ flex: 1, backgroundColor: "rgba(10,10,40,0.8)", justifyContent: 'center', }} >
                     <TouchableWithoutFeedback onPress={() => { }}>
                         <View style={{ alignSelf: 'center', width: '85%', maxHeight: '80%', backgroundColor:"white", borderRadius:10, overflow: "hidden" }}>
                             <FlatList

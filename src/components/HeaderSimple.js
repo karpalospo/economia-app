@@ -1,16 +1,16 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity} from "react-native";
 
-const volver = require('../../../assets/icons/volver.png')
-const logo = require('../../../assets/la_economia_h.png')
+const volver = require('../../assets/icons/volver.png')
+const logo = require('../../assets/la_economia_h.png')
 
 const HeaderSimple = (props) => {
 
     const {onBack = () => {}} = props
     return (
         <View style={styles.container}>
-            <TouchableOpacity onPress={onBack} style={{marginLeft:17, width:35, height:35, borderRadius:18, backgroundColor:"#d6d6d6", alignItems:"center", justifyContent:"center"}}>
-                <Image source={volver} tintColor="#333" resizeMode='contain' style={{width:16, height:16}} />
+            <TouchableOpacity onPress={onBack} style={{marginLeft:19, width:40, height:40, borderRadius:20, elevation:5, backgroundColor:"white", alignItems:"center", justifyContent:"center"}}>
+                <Image source={volver} tintColor="#444" resizeMode='contain' style={{width:19, height:19}} />
             </TouchableOpacity>
             <View style={{flex:1, alignItems:"center"}}><Image style={{width: 150, height: 40}} resizeMode='contain' source={logo} /></View>
             <View style={{width:60}}></View>
