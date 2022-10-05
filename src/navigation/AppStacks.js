@@ -9,6 +9,7 @@ import CategoriaView from '../screens/CategoriaView'
 import Cart from '../screens/Cart'
 import Checkout from '../screens/Checkout'
 import Profile from '../screens/Profile'
+import Registro from '../screens/Registro'
 
 
 const Stack = createStackNavigator()
@@ -24,6 +25,7 @@ const AppStacks = () => {
             <Stack.Screen name='Cart' component={Cart} options={{ headerShown:false }}/>
             <Stack.Screen name='Checkout' component={Checkout} options={{ headerShown:false }}/>
             <Stack.Screen name='Profile' component={Profile} options={{ headerShown:false }}/>
+            <Stack.Screen name='Registro' component={Registro} options={{ headerShown:false }}/>
         </Stack.Navigator>
     )
 }

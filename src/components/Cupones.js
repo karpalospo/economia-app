@@ -29,7 +29,7 @@ const Cupones = ({visible, onclose}) => {
                 <View style={{marginTop: 40, padding:5, paddingBottom:20, borderRadius:10, backgroundColor:"white"}}>
                     <View style={{flexDirection:"row", justifyContent:"flex-end"}}>
                         <TouchableOpacity onPress={onclose} style={{width:35, height:35, borderRadius:18, backgroundColor:"#222", alignItems:"center", justifyContent:"center"}}>
-                            <Image source={close} tintColor="white" resizeMode='contain' style={{width:16, height:16}} />
+                            <Image source={close} tintColor="white" resizeMode='contain' style={{width:16, height:16, tintColor:"white"}} />
                         </TouchableOpacity>
                     </View>
                     <FlatList

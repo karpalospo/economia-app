@@ -4,10 +4,8 @@ import { COLORS } from '../global/styles';
 
 
 
-const Button = (props) => {
+const Button = ({onPress, styleMode="default", title = "", buttonStyle = {}, textStyle = {}, loading}) => {
     
-
-    const {onPress, styleMode="default", title = "", buttonStyle = {}, textStyle = {}, loading} = props
 
     let _styleMode = {
         "default": {},

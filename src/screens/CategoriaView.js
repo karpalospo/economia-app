@@ -15,7 +15,7 @@ import { getProducts } from "../services/products";
 
 const CategoriaView = ({navigation, route}) => {
 
-    const {subCategories, id, title } = route.params
+    const {subCategories, title } = route.params
 
     const [availableCategories, setAvailableCategories] = useState([])
     const [selectedCategory, setSelectedCategory] = useState({})
@@ -42,8 +42,6 @@ const CategoriaView = ({navigation, route}) => {
         setCategoryProducts(res.products)
     }
 
-    console.log("availaible", availableCategories)
-
     return(
         <View style={styles.container}>
 
@@ -62,10 +60,6 @@ const CategoriaView = ({navigation, route}) => {
                         <View>
                             {availableCategories.length > 0 &&
                             <FlatList
-                                initialScrollIndex={availableCategories.findIndex(item => item.id == selectedCategory.id)}
-                                getItemLayout={(data, index) => (
-                                    {length: (styles.categoryItemContainer.width + styles.categoryItemContainer.marginRight), offset: (styles.categoryItemContainer.width + styles.categoryItemContainer.marginRight) * index, index}
-                                )}
                                 keyExtractor={(item, index) => `category_${index}`}
                                 horizontal={true}
                                 data={availableCategories}

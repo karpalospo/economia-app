@@ -1,5 +1,5 @@
 import React, {useState, useContext, useEffect } from "react";
-import { View, StyleSheet, FlatList, SectionList, Text, StatusBar} from "react-native";
+import { View, StyleSheet, FlatList, Text, StatusBar} from "react-native";
 import { CategoryHorizontalCard } from "../components/CategoryHorizontalCard";
 import { HeaderWithTitleAndBackButton } from "../components/HeaderWithTitleAndBackButton";
 import { URL, PANEL_API } from "../services/services";
@@ -7,9 +7,9 @@ import { FormatBannerItem } from "../utils/formatter";
 import Carousel from "../components/Carousel";
 import BottomMenu from "../components/BottomMenu";
 
-const Categorias = (props) => {
+const Categorias = ({navigation, route}) => {
 
-    const { id, categories, title } = props.route.params;
+    const { id, categories, title } = route.params;
 
     const [idCat, setIDCat] = useState(id);
     const [loadingGallery, setLoadingGallery] = useState(false);
@@ -49,7 +49,7 @@ const Categorias = (props) => {
 
     onTapCategory = (title, id, subCategories) =>
     {
-        props.navigation.navigate('CategoriaView', {title, id, subCategories})
+        navigation.navigate('CategoriaView', {title, id, subCategories})
     }
 
 
@@ -58,7 +58,7 @@ const Categorias = (props) => {
 
             <View style={styles.groupSectionContainer}>
 
-                <HeaderWithTitleAndBackButton title='Categorias' subtitle={title} onPress={() => props.navigation.goBack()} />
+                <HeaderWithTitleAndBackButton title='Categorias' subtitle={title} onPress={() => navigation.goBack()} />
 
             </View>
 
@@ -85,6 +85,7 @@ const Categorias = (props) => {
                     keyExtractor={(item, index) => `category_${index}`}
                     data={categories}
                     showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{paddingBottom: 80}}
                     renderItem={({ item, index }) => { 
                         return (
                             <CategoryHorizontalCard title={item.name} image={{uri: `${URL.S3_GROUPS}${idCat}/${item.id}.png`}} onPress={() => onTapCategory(item.name, item.id, item.subCategories)} />
@@ -97,7 +98,7 @@ const Categorias = (props) => {
 
             <View style={{height:60}} />
 
-            <BottomMenu navigation={props.navigation} />
+            <BottomMenu navigation={navigation} />
 
         </View>
     )

@@ -38,10 +38,9 @@ const Header = ({
 
     return(
         
-        <SafeAreaView style={{backgroundColor: "white"}}>
+        <SafeAreaView style={{backgroundColor: "white", marginTop: -10}}>
             
             <StatusBar backgroundColor="#fff" barStyle="dark-content" />
-
 
             <View style={styles.headerContainer}>
                 
@@ -123,7 +122,7 @@ export default Header
 const styles = StyleSheet.create({
 
 
-    headerContainer: {paddingHorizontal: 15, backgroundColor: "#ffffff", paddingTop: 5, paddingBottom: 7, alignItems: 'center', borderBottomWidth:2, borderBottomColor: "#F2f2f2"},
+    headerContainer: {backgroundColor: "white", paddingHorizontal: 15, paddingBottom: 7, alignItems: 'center', borderBottomWidth:2, borderBottomColor: "#F2f2f2"},
 
     headerSlot: {width: '33.3%'},
 
@@ -147,7 +146,7 @@ const styles = StyleSheet.create({
     headerCartBadgeContainer: {width: 16, height: 16, borderRadius: 8, backgroundColor: "#FF2F6C", alignItems: 'center', justifyContent: 'center'},
     headerCartBadgeText: {fontSize: 10, color: "#FFFFFF", textAlign: 'center', fontFamily: "Roboto"},
 
-    searchBarInputContainer: {width: '100%', alignItems: 'center', borderRadius: 25, flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 3, paddingHorizontal:15, backgroundColor: "#f2f2f2", borderWidth: 0.5, borderColor:"#ccc", marginVertical: 4},
+    searchBarInputContainer: {width: '100%', alignItems: 'center', borderRadius: 25, flexDirection: 'row', justifyContent: 'space-between', height:40, paddingVertical: 3, paddingHorizontal:15, backgroundColor: "#f2f2f2", borderWidth: 0.5, borderColor:"#ccc", marginVertical: 4},
     searchBarInput: {color: "#444", backgroundColor: "rgba(0,0,0,0)", fontSize: 15, fontFamily: "Roboto", flex: 1, paddingLeft:15},
     searchBarButton: {width: '80%', backgroundColor: "rgba(0,0,0,0)"},
     searchBarButtonText: {color: "#A5A5A5", fontSize: 14, fontFamily: "Roboto"},

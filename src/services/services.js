@@ -62,8 +62,6 @@ export const HELPER_API =
     }
 }
 
-
-
 export const VIDA_SANA_API = 
 {
     GET: {
@@ -124,7 +122,6 @@ export const VIDA_SANA_API =
         },
     },
 }
-
 
 export const BONUS_API = 
 {
@@ -199,22 +196,15 @@ export const API = {
         
         async RetrieveGroupsOfCategories (location = '') {
             let response = await fetchAsync(`${URL.HOST}/economia/api/newcategorias/${location}`, HTTP_REQUEST_METHOD.GET)
-            if(!response.error)
-            {
-                response.error = !response.message.success
-            }
-
+            if(!response.error) response.error = !response.message.success
             return response
         },
         
         async RetrieveProductsFromSubcategory (location, subcategory, {page = 1, itemsPerPage = 10} = {})
         {
-
-
             return await fetchAsync(`${URL.HOST}/economia/api/RefSubCat/${location}/${subcategory}/${page}/${itemsPerPage}/${orderBy}/892300678`, HTTP_REQUEST_METHOD.GET)
         },
 
-        
         async RetrieveProductFromBarCode (location, barCode) {
             let response = await fetchAsync(`${URL.HOST}/economia/api/referencias/${location}/${barCode}/`, HTTP_REQUEST_METHOD.GET)
             if(!response.error)
@@ -229,7 +219,6 @@ export const API = {
 
             return response;
         },
-
 
         async RetrieveWhetherCouponIsValidOrNot (coupon, document, name, email, token) {
             let response = await fetchAsync(`${URL.HOST}/economia/api/cupon/${coupon}?user[nit]=${document}&user[email]=${email}&user[nombres]=${name}&user[auth_token]=${token}`, HTTP_REQUEST_METHOD.GET)
@@ -300,28 +289,9 @@ export const API = {
             return await fetchAsync(`${URL.HOST}/economia/api/referencias/codigos/`, HTTP_REQUEST_METHOD.POST, {body: JSON.stringify({codigos, ciudad, convenio, pagina: page, items}), headers: HEADER_JSON})
         },
 
-        async PerformSignUp (fields)
+        async SignUp (fields)
         {
-            const _fields = {
-                email: fields.email, 
-                nombres: `${fields.name} ${fields.lastname}`, 
-                nit: fields.document, 
-                fecha_nacimiento: fields.dateOfBirth, 
-                telefono: fields.phone, 
-                celular: fields.cellphone, 
-                password: fields.password, 
-                confirm_password: fields.password, 
-                acepta_condiciones: fields.terms, 
-            }
-
-            let response = await fetchAsync(`${URL.HOST}/economia/site/users/signup/`, HTTP_REQUEST_METHOD.POST, {body: FormUrlEncoded(_fields), headers: {'Content-Type': 'application/x-www-form-urlencoded'}});
-            
-            if(!response.message.success)
-            {
-                response.error = true;
-            }
-
-            return response;
+            return await fetchAsync(`${URL.HOST}/economia/site/users/signup/`, HTTP_REQUEST_METHOD.POST, {body: FormUrlEncoded(fields), headers: {'Content-Type': 'application/x-www-form-urlencoded'}});
         },
 
         async deleteAddress(alias, email, auth_token) {

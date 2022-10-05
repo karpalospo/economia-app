@@ -15,12 +15,12 @@ export default class Carousel extends React.Component {
 		dotsColor: "#1B42CB",
 		imageStyle: {
 			width,
-			height: 190,
+			height: 250,
 		},
 		imageContainerStyle: {
 			backgroundColor: 'rgba(0,0,0,0)',
 		},
-		imageResizeMode: 'cover',
+		imageResizeMode: 'contain',
 		onTapImage: () => { },
 		showIndicator: true,
 		autoscroll: false,
@@ -130,7 +130,7 @@ export default class Carousel extends React.Component {
 								style={[this.props.imageContainerStyle, { height: this.state.carouselImageDefaultHeight }]}
 								onPress={() => { this.props.onTapImage(this.getImageIndex(image.id)) }} key={index}
 							>
-								<Image style={{ height: this.state.carouselImageDefaultHeight, width: this.state.carouselImageDefaultWidth }} source={image.source} resizeMode={this.props.imageResizeMode} />
+								<Image style={{ height: 190, width: this.state.carouselImageDefaultWidth }} source={image.source} resizeMode="cover" />
 							</TouchableOpacity>
 						))}
 					</ScrollView>

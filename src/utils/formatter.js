@@ -106,7 +106,8 @@ export const FormatProduct = (product) =>
         bigImage: {uri: `${URL.HOST}/economia/site/img/1x/${product.codigo}.jpg`}, 
         antes: product.Antes,
         price: product.Ahora, 
-        discount: product.Porcentaje, 
+        discount: product.Porcentaje,
+        idoferta: product.idoferta,
         name: product.descripcion, 
         unit: product.valor_contenido ? product.valor_contenido : '',
         pricePerUnit: product.precioMedida ? product.precioMedida : 0,
@@ -121,24 +122,6 @@ export const FormatProduct = (product) =>
 }
 
 
-/**
- * Formats a product element according to Purchase API format
- * 
- * @param {Object} product 
- */
-export const FormatPurchaseProduct = (product) => 
-{
-    return {
-        codigo: product.id,
-        descripcion: product.name,
-        price: product.price,
-        stock: product.stock,
-        IdUnidad: product.unitId ? product.unitId : 1,
-        VlrMinimo: product.minTotalAmount,
-        cantidad: product.qty, 
-        Porcentaje: product.discount,
-    }
-}
 
 
 

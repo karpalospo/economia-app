@@ -19,7 +19,8 @@ export const SignInCard = ({ onRegister = () => {}, onLogin = () => {}, visible 
 
     const { user, setUser } = useContext(UtilitiesContext)
 
-    onPressSubmit = async (email, password) => {
+    login = async () => {
+        
         if(email != '' && password != '') {
 
             setLoading(true)
@@ -107,7 +108,7 @@ export const SignInCard = ({ onRegister = () => {}, onLogin = () => {}, visible 
                     </TouchableOpacity>
 
                     {!loading && 
-                    <TouchableOpacity style={styles.positiveButton} onPress={() => onPressSubmit(email, password)}>
+                    <TouchableOpacity style={styles.positiveButton} onPress={() => login()}>
                         <Text style={styles.positiveButtonText}>Iniciar sesión</Text>
                     </TouchableOpacity>
                     }

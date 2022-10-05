@@ -13,7 +13,7 @@ import { getProducts } from "../services/products";
 import { UtilitiesContext } from '../context/UtilitiesContext'
 import ProductList from "../components/ProductList";
 
-const Home = ({navigation}) => {
+const Home = ({navigation, route}) => {
 
 
     const [categoryGroups, setCategoryGroups] = useState([]);
@@ -26,7 +26,9 @@ const Home = ({navigation}) => {
          
     useEffect(() => {
         (async function () {
-
+           
+            if(!location.id) return 
+  
             let res = await API.POST.init({location: location.id, page: "home"}), categoryGroups = []
 
             if(!res.error) {
@@ -52,12 +54,12 @@ const Home = ({navigation}) => {
     }, [location])
     
 
-    onTapCategory = (id, title, categories) => 
+    const onTapCategory = (id, title, categories) => 
     {
         navigation.navigate('Categorias', {title, id, categories});
     }
     
-    onTapImage = (image) => {
+    const onTapImage = (image) => {
 
         if(image.data.codes) {
             navigation.navigate('Busqueda', {search: `[banner]${image.id}`, location: location.id})
@@ -65,7 +67,6 @@ const Home = ({navigation}) => {
             navigation.navigate('Busqueda', {search: `${image.data.keywords}`, location: location.id})
         }
     }
-
 
     return(
         <View style={styles.container}>
@@ -96,11 +97,11 @@ const Home = ({navigation}) => {
         
                             <View>
 
-                                {/*<Button title="clear" onPress={() => clearCartItems()} />*/}
+                                {/* <Button title="clear" onPress={() => clearCartItems()} /> */}
 
-                                <View style={{flexDirection:"row", justifyContent:"center"}}>
+                                <View style={{flexDirection:"row", justifyContent:"flex-start"}}>
                                     <View style={styles.h2_cont}>
-                                        <Text style={styles.h2}>LAS MEJORES OFERTAS</Text>
+                                        <Text style={styles.h2}>NUESTRAS MEJORES OFERTAS</Text>
                                     </View>
                                 </View>
 
@@ -162,15 +163,15 @@ const styles = StyleSheet.create({
     loadingIndicatorContainer: {width: '100%', alignItems: 'center', padding: 15, },
 
     ofertas_cont: {
-        marginVertical: 40, 
+        marginVertical: 20, 
         paddingHorizontal: 30, 
         borderRadius:7, 
         backgroundColor: "#ff2c6e",
         elevation: 6,
-        shadowColor: "#000", 
-        shadowOffset: {width: 0, heigth: 0}, 
-        shadowOpacity: 7, 
-        shadowRadius: 20,
+        shadowColor: "rgba(0,0,0,0.3)", 
+        shadowOffset: {width: 1, heigth: 2}, 
+        shadowOpacity: 2, 
+        shadowRadius: 8
     },
 
     ofertas: {
@@ -183,24 +184,14 @@ const styles = StyleSheet.create({
 
     h2: {
         textAlign:"center",
-        color:"#555",
-        fontSize: 15,
-        fontFamily: "RobotoB"
+        color:"#ff2c6e",
+        fontSize: 17,
+        fontFamily: "RobotoB",
+
     },
 
     h2_cont: {
-        marginVertical:20,
-        width:"60%",
-        paddingVertical:10,
+        paddingVertical:7,
         paddingHorizontal:20,
-        backgroundColor: "#eeeeee",
-        borderWidth: 2,
-        borderColor: "white",
-        borderRadius: 30,
-        elevation: 6,
-        shadowColor: "#000", 
-        shadowOffset: {width: 0, heigth: 0}, 
-        shadowOpacity: 7, 
-        shadowRadius: 20,
     }
 })

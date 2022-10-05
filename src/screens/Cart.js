@@ -79,7 +79,7 @@ const Cart = ({navigation}) => {
                 {!loading && cartItems.length == 0 &&
                 <View style={styles.emptyCartContainer}>
                     <Image source={nocart} style={{width:100, height: 90}} resizeMode="contain" tintColor="#bbb" />
-                    <Text style={styles.emptyCartText}>Aún no tienes productos en tu carrito. Agrega productos a pedido para continuar con la compra.</Text>
+                    <Text style={styles.emptyCartText}>Aún no tienes productos en tu carrito. Agrega productos al carrito para continuar con la compra.</Text>
                 </View>}
 
                 {loading && 

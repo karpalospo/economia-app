@@ -109,6 +109,7 @@ const Provider = ({ children }) => {
         ;
         setCart(newCart)
         AsyncStorage.setItem('cart', JSON.stringify(newCart));
+        AsyncStorage.removeItem('location');
     }
 
     function processCart(items) {

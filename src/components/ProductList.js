@@ -7,16 +7,14 @@ import { ProductDetail } from "./ProductDetail";
 
 const {width} = Dimensions.get('window')
 const oferta = require("../../assets/icons/oferta2.png")
-const noimage = require('../../assets/icons/product/noimage.png')
 
-const ProductList = ({items = [], loading = false, height = 0}) => {
+const ProductList = ({items = [], loading = false}) => {
 
-    const [noimageStatus, setNoimageStatus] = useState(false);
 
     const [showDetail, setShowDetail] = useState(false);
     const [productID, setProductID] = useState(0);
 
-    const { location, cart, setCartItem } = useContext(UtilitiesContext)
+    const { cart, setCartItem } = useContext(UtilitiesContext)
 
 
     const addCart = (item) => {
@@ -122,10 +120,10 @@ const styles = {
         justifyContent: 'center', 
         backgroundColor: "#0a61d0", 
         elevation: 6,
-        shadowColor: "#000", 
-        shadowOffset: {width: 0, heigth: 0}, 
-        shadowOpacity: 7, 
-        shadowRadius: 20
+        shadowColor: "rgba(0,0,0,0.3)", 
+        shadowOffset: {width: 1, heigth: 2}, 
+        shadowOpacity: 2, 
+        shadowRadius: 8
     },
     addToCartButtonText: {
         fontSize: 14, 
@@ -139,5 +137,5 @@ const styles = {
 
     vidaSanaIndicatorContainer: { position: 'absolute', top: 0, left: 10, width: 38, width: 38, justifyContent: 'center'},
     discountImg: {width:38, height: 38, position:"absolute", zIndex:-1, top:3, right:3},
-    productDetailsPricePercentDiscount: {fontSize: 13, color:"white", fontFamily: "RobotoB", width:38, height: 38, position:"absolute", textAlign:"center", zIndex:1, top:12, right:3},
+    productDetailsPricePercentDiscount: {fontSize: 16, color:"white", fontFamily: "RobotoB", width:38, height: 38, position:"absolute", textAlign:"center", zIndex:1, top:14, right:3},
 }

@@ -1,4 +1,4 @@
-import React, {useState, useContext} from "react";
+import React, {useState, useContext, useEffect} from "react";
 import { View, Text, TouchableOpacity, Modal } from "react-native";
 
 
@@ -8,17 +8,24 @@ import { Feather, Entypo, AntDesign  } from '@expo/vector-icons';
 import { UtilitiesContext } from '../context/UtilitiesContext'
 
 
-const BottomMenu = ({navigation}) => {
-
-
-    const [signInVisible, setSignInVisible] = useState(false)
-    const [locationVisible, setLocationVisible] = useState(false)
+const BottomMenu = ({navigation, showLocation = false}) => {
 
     const { location, setLocation, user } = useContext(UtilitiesContext)
     
-    showLogin = (value) => {
-        if(user.logged) navigation.navigate('Profile')
-        else setSignInVisible(true)
+    const [signInVisible, setSignInVisible] = useState(false)
+    const [locationVisible, setLocationVisible] = useState(showLocation || (!location.id ? true : false))
+
+    
+
+    showLogin = () => {
+        
+        if(user.logged == undefined) {
+            console.log(user,user.logged, signInVisible)
+            return setSignInVisible(true)
+        }
+        navigation.navigate('Profile')
+  
+        
     }
 
     onSelectLocation = async (selectedLocation) =>
@@ -33,9 +40,8 @@ const BottomMenu = ({navigation}) => {
 
     onRegisterSignIn = () => {
         setSignInVisible(false)
-        navigation.navigate("SignUp")
+        navigation.navigate("Registro")
     }
-
 
 
     return (
@@ -44,10 +50,10 @@ const BottomMenu = ({navigation}) => {
                 <Feather  name="home" size={20} color="#333" />
                 <Text style={styles.botonFlotanteText}>Home</Text>
             </TouchableOpacity>
-            <View style={styles.botonFlotante} onPress={() => navigation.navigate('Categorias', {id: 8, title: "Categorías"})}>
+            <TouchableOpacity style={styles.botonFlotante} onPress={() => {}}>
                 <AntDesign name="appstore-o" size={20} color="#333" />
                 <Text style={styles.botonFlotanteText}>Categorias</Text>
-            </View>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.botonFlotante} onPress={() => showLogin()}>
                 <Feather  name="user" size={20} color="#333" />
                 <Text style={styles.botonFlotanteText}>Mi Perfil</Text>
@@ -57,7 +63,7 @@ const BottomMenu = ({navigation}) => {
                 <Text style={[styles.botonFlotanteText, {color: "#fff", textTransform: "capitalize"}]}>{location.id ? location.name : "SELECCIONE..."}</Text>
             </TouchableOpacity>
 
-            <SignInCard 
+            <SignInCard
                 visible={signInVisible} 
                 onLogin={() => setSignInVisible(false)} 
                 onCancel={onCancelSignIn} 
@@ -106,7 +112,8 @@ const styles = {
         backgroundColor:"white", 
         position: "absolute", 
         bottom: 0, 
-        left: 0, 
+        left: 0,
+        paddingBottom: 20,
         borderTopWidth:1,
         borderColor:"#ddd",
      },

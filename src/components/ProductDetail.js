@@ -142,7 +142,7 @@ export const ProductDetail = ({
                 <View style={{backgroundColor:"white", height: "95%", position:"absolute", left: 0, bottom: 0, width:"100%", padding:10, borderTopLeftRadius:15, borderTopRightRadius:15}} >
                     <View style={{flexDirection:"row", justifyContent:"flex-end"}}>
                         <TouchableOpacity onPress={() => onClose()} style={{width:35, height:35, borderRadius:18, backgroundColor:"#222", alignItems:"center", justifyContent:"center"}}>
-                            <Image source={volver} tintColor="white" resizeMode='contain' style={{width:16, height:16}} />
+                            <Image source={volver} tintColor="white" resizeMode='contain' style={{width:16, height:16, tintColor: 'white'}} />
                         </TouchableOpacity>
                     </View>
 
@@ -181,6 +181,7 @@ export const ProductDetail = ({
 
                             {product.unit != '' && <Text style={styles.pricePerUnitText}>{CapitalizeWords(product.unit)}</Text>}
 
+                            <View style={{height: 20}} />
                             <View style={styles.addToCartContainer}>
                                 {itemCart && itemCart._quanty > 0 && <Cantidad value={itemCart._quanty} item={product} onChange={onChange} />}
                                 {!itemCart && 
@@ -189,9 +190,11 @@ export const ProductDetail = ({
                                 </TouchableOpacity>
                                 }
                             </View>
-             
-                            <Text style={styles.disponibles}>{product.stock} Disponibles</Text>
-                    
+                            
+                            <View style={{backgroundColor:"#48b0b0", marginTop: 10, borderRadius:20, paddingHorizontal:20, paddingVertical: 3}}>
+                                <Text style={styles.disponibles}>{product.stock} Disponibles</Text>
+                            </View>
+
                             {product.additionalDescription != '' &&
                             <View style={{width:"100%", paddingHorizontal:20}}>
                                 <View style={styles.productDescriptionTitleContainer}>
@@ -232,13 +235,7 @@ const styles = StyleSheet.create({
     scrollContainer: {alignItems: 'center', position: "relative", paddingBottom:40},
     proveedor: {paddingHorizontal:30, fontSize:12, marginTop:20, color: "#999"},
     disponibles: {
-        backgroundColor:"#48b0b0", 
         color:"white", 
-        paddingVertical:6, 
-        paddingHorizontal:20, 
-        borderRadius:20, 
-        textAlign:"center", 
-        marginTop:20,
     },
     productImageContainer: { width: height * .35, height: height * .35, alignItems: 'center', },
     productImage: {height: '100%', width: '100%',},
@@ -250,12 +247,11 @@ const styles = StyleSheet.create({
     discountContainer: {width: '100%', flexDirection: 'row', justifyContent: 'center', padding: 5},
     productDetailsPriceText: {fontSize: 16, textDecorationLine: 'line-through', color: "#9EA6A6", fontFamily: "Roboto"},
     productDetailsPriceDiscountPercentContainer: {marginHorizontal: 3, width: 44, padding: 2, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderColor: "#FF2F6C", borderWidth: 1},
-    productDetailsPricePercentDiscount: {fontSize: 12, color: "#FF2F6C", fontFamily: "RobotoB"},
+
 
     pricePerUnitText: {
         fontSize: 14, 
         color: "#555", 
-        marginBottom: 20, 
         fontFamily: "Roboto", 
         marginTop: 5
     },
@@ -272,16 +268,15 @@ const styles = StyleSheet.create({
         alignItems: 'center', 
         justifyContent: 'center', 
         backgroundColor: "#0a61d0", 
-        marginTop:5,
         marginBottom:10,
         elevation: 6,
-        shadowColor: "#000", 
-        shadowOffset: {width: 0, heigth: 0}, 
-        shadowOpacity: 7, 
-        shadowRadius: 20
+        shadowColor: "rgba(0,0,0,0.3)", 
+        shadowOffset: {width: 1, heigth: 2}, 
+        shadowOpacity: 2, 
+        shadowRadius: 8
     },
     footerAddToCartButtonText: {
-        fontSize: 16, 
+        fontSize: 19, 
         paddingHorizontal: 45, 
         paddingVertical:15, 
         color: "#fff", 
@@ -289,7 +284,7 @@ const styles = StyleSheet.create({
         fontFamily: "RobotoB"
     },
 
-    vidaSanaIndicatorContainer: { position: 'absolute', top: 0, left: 30, width: 50, width: 50, justifyContent: 'center', zIndex: 100},
-    discountImg: {width:50, height: 50, position:"absolute", zIndex:-1, top:3, right:3},
-    productDetailsPricePercentDiscount: {fontSize: 18, color:"white", fontFamily: "RobotoB", width:47, height: 38, position:"absolute", textAlign:"center", zIndex:1, top:13, left:0},
+    vidaSanaIndicatorContainer: { position: 'absolute', top: 0, left: 30, width: 50, height: 50, justifyContent: 'center', zIndex: 100},
+    discountImg: {width:55, height: 55, position:"absolute", zIndex:-1, top:3, right:3},
+    productDetailsPricePercentDiscount: {textAlign: "center", fontSize: 22, color:"white", fontFamily: "RobotoB", width:40, height: 26, position:"absolute", textAlign:"center", zIndex:1, top:17, left:0, lineHeight:26},
 })
