@@ -81,7 +81,7 @@ const Home = ({navigation, route}) => {
 
                     <View>
                         
-                        <Carousel images={banners} onTapImage={onTapImage} />
+                        <Carousel autoscroll={true} images={banners} onTapImage={onTapImage} />
 
                         <View style={styles.categoriesContainer}>
                             <FlatList

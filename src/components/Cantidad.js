@@ -34,6 +34,7 @@ const styles = {
 
     supercontainer: {
         position: "relative",
+        marginVertical: 10
     },
 
     container: {

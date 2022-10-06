@@ -1,17 +1,18 @@
 import React, {useState, useEffect, useContext} from 'react';
 import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Image, Modal, Alert, Dimensions, ActivityIndicator } from "react-native";
-import _ from 'lodash'
 
-import { f, CapitalizeWord, CapitalizeWords, IsExcludedCategory } from "../utils/helper";
+import { f, CapitalizeWord, IsExcludedCategory } from "../utils/helper";
 import { API, HELPER_API, URL, } from "../services/services";
 
 import { FormatProduct } from "../utils/formatter";
 
 import Carousel from "./Carousel";
 import Cantidad from "../components/Cantidad";
+import { getProducts } from "../services/products";
+
 import { UtilitiesContext } from '../context/UtilitiesContext'
 
-const {width, height} = Dimensions.get('window')
+const {height} = Dimensions.get('window')
 const volver = require('../../assets/icons/times.png')
 const noimage = require('../../assets/icons/product/noimage.png')
 const oferta = require('../../assets/icons/oferta2.png')
@@ -31,7 +32,7 @@ export const ProductDetail = ({
     const [product, setProduct] = useState({})
     const [gallery, setGallery] = useState([])
 
-    const { location, cart, setCartItem } = useContext(UtilitiesContext)
+    const { location, user, cart, setCartItem } = useContext(UtilitiesContext)
 
     useEffect(() => {
 
@@ -52,65 +53,52 @@ export const ProductDetail = ({
     
     const retrieveProduct = async () =>
     {
+        let p = false, _gallery
+
         setLoading(true);
+        const products = await getProducts("[code]" +  productID, location.id, user)
+        setLoading(false);
 
-        let res;
-
-        let res2 = await API.POST.search("[code]" +  productID, location.id)
-        if(!res2.error) {
-            res = await API.POST.PerformRetrieveProductsFromCodeList([res2.message.products[0].id], location.id)
-        }
-
-        let _state = {
-            loading: false,
-            product: {},
-            gallery: [],
+        if(products.products.length > 0) {
+            p = products.products[0]
         }
         
-        if(!res.error)
-        {
-            
-            if(res.message.data.length > 1)
+        if(p) {
+   
+            _gallery = [{source: p.bigImage}]
+            const imageRes = await HELPER_API.HEAD.CheckIfImageExists(p.image.uri)
+            if(imageRes.error)
             {
-                _state.product = FormatProduct(res.message.data[0])
-                _state.gallery = [{source: _state.product.bigImage}]
-                const imageRes = await HELPER_API.HEAD.CheckIfImageExists(_state.product.image.uri)
-                if(imageRes.error)
-                {
-                    _state.product.image = noimage
-                }
-
-                const bigImageRes = await HELPER_API.HEAD.CheckIfImageExists(_state.product.bigImage.uri)
-                if(bigImageRes.error)
-                {
-                    _state.gallery[0].source = _state.product.image
-                }
-
-                const gallery = await fillImageGallery(_state.product.id, 1)
-                for (let index = 0; index < gallery.length; index++) {
-                    _state.gallery.push({source: {uri: gallery[index]}})
-                }
-                
+                p.image = noimage
             }
-        }
-        else
-        {   
+
+            const bigImageRes = await HELPER_API.HEAD.CheckIfImageExists(p.bigImage.uri)
+            if(bigImageRes.error)
+            {
+                _gallery[0].source = p.image
+            }
+
+            const gallery2 = await fillImageGallery(p.id, 1)
+            for (let index = 0; index < gallery2.length; index++) {
+                _gallery.push({source: {uri: gallery2[index]}})
+            }
+                
+        } else {   
             Alert.alert('Atención', 'No se pudo obtener la información de este producto.',
             [
-                {text: 'Reintentar', onPress: async() => await retrieveProduct(location, product, searchBy)},
+                {text: 'Reintentar', onPress: async() => await retrieveProduct()},
                 {text: 'Volver', onPress: () => navigation.goBack()}
             ], {cancelable: false})
         }
 
-        setLoading(_state.loading)
-        setProduct(_state.product)
-        setGallery(_state.gallery)
+        setProduct(p)
+        setGallery(_gallery)
 
     }
 
-    const fillImageGallery = async (productId, index, gallery = []) =>
+    const fillImageGallery = async (id, index, gallery = []) =>
     {
-        const url = `${URL.HOST}/economia/site/img/galeria/${productId}-${index}.jpg`
+        const url = `${URL.HOST}/economia/site/img/galeria/${id}-${index}.jpg`
         
         const res = await HELPER_API.HEAD.CheckIfImageExists(url)
         
@@ -119,7 +107,7 @@ export const ProductDetail = ({
         if(!res.error)
         {
             _array.push(url)
-            return await fillImageGallery(productId, (index + 1), _array)
+            return await fillImageGallery(id, (index + 1), _array)
         }
         
         return _array
@@ -154,12 +142,13 @@ export const ProductDetail = ({
                             {hasDiscount && 
                             <View style={styles.vidaSanaIndicatorContainer}>
                                 <Image source={oferta} style={styles.discountImg} resizeMode="contain"/>
-                                <Text style={styles.productDetailsPricePercentDiscount}>{`${product.discount}%`}</Text>
+                                <Text style={styles.descuento}>{`${product.discount}%`}</Text>
                             </View>
                             }
                             
                             {!loading &&
                             <Carousel  
+                                autoscroll={true}
                                 imageStyle = {{height: 240}}
                                 images2={gallery}
                                 imageResizeMode={'contain'} 
@@ -167,26 +156,22 @@ export const ProductDetail = ({
                         
                             <Text style={styles.proveedor}>{product.proveedor}</Text>
                             <View style={styles.productNameContainer}>
-                                <Text style={styles.productNameText}>{CapitalizeWord(product.name)}</Text>
+                                <Text style={styles.nombre}>{CapitalizeWord(product.name)}</Text>
                             </View>
                             
-
-                            {hasDiscount &&
-                            <View style={styles.discountContainer}>
-                                <Text style={styles.productDetailsPriceText}>{f(product.antes)}</Text>
+                            <View style={[styles.rowCenter, {marginVertical:15}]}>
+                                {hasDiscount && <Text style={styles.precioAntes}>{f(product.antes)}</Text>}
+                                <Text style={[styles.precio, {color: hasDiscount ? "#FF2F6C" : "#333"}]}>{f(product.price)}</Text>
                             </View>
-                            }
 
-                            <Text style={[styles.productPriceText, {color: hasDiscount ? "#FF2F6C" : "#333"}]}>{f(product.price)}</Text>
-
-                            {product.unit != '' && <Text style={styles.pricePerUnitText}>{CapitalizeWords(product.unit)}</Text>}
+                            {product.unit != '' && <Text style={styles.unidad}>{product.unit}</Text>}
 
                             <View style={{height: 20}} />
                             <View style={styles.addToCartContainer}>
                                 {itemCart && itemCart._quanty > 0 && <Cantidad value={itemCart._quanty} item={product} onChange={onChange} />}
                                 {!itemCart && 
-                                <TouchableOpacity style={styles.footerAddToCartButton} onPress={() => addCart(product)}>
-                                    <Text style={styles.footerAddToCartButtonText}>AGREGAR</Text>
+                                <TouchableOpacity style={styles.addButton} onPress={() => addCart(product)}>
+                                    <Text style={styles.addButtonText}>AGREGAR</Text>
                                 </TouchableOpacity>
                                 }
                             </View>
@@ -230,10 +215,15 @@ export const ProductDetail = ({
 
 
 const styles = StyleSheet.create({
-    
+    rowCenter: {flexDirection:"row", alignItems:"center", justifyContent: "center"},
     container: {flex: 1},
     scrollContainer: {alignItems: 'center', position: "relative", paddingBottom:40},
-    proveedor: {paddingHorizontal:30, fontSize:12, marginTop:20, color: "#999"},
+    proveedor: {
+        paddingHorizontal:10, 
+        fontSize:14,
+        marginVertical:10, 
+        color: "#aaa"
+    },
     disponibles: {
         color:"white", 
     },
@@ -241,18 +231,33 @@ const styles = StyleSheet.create({
     productImage: {height: '100%', width: '100%',},
 
     productNameContainer: {width: '90%', marginVertical: 10},
-    productNameText: { fontSize: 22, textAlign: 'center', color: "#333", fontFamily: "TommyM" },
-    productPriceText: { fontSize: 23, textAlign: 'center', color: "#1B42CB", fontFamily: "RobotoB", margin:10 },
+    nombre: {
+        fontSize: 24, 
+        textAlign: 'center', 
+        color: "#333", 
+        fontFamily: "TommyM" 
+    },
+    precio: { 
+        fontSize: 26, 
+        textAlign: 'center', 
+        color: "#1B42CB", 
+        fontFamily: "Tommy",
+        marginHorizontal:10
+    },
 
-    discountContainer: {width: '100%', flexDirection: 'row', justifyContent: 'center', padding: 5},
-    productDetailsPriceText: {fontSize: 16, textDecorationLine: 'line-through', color: "#9EA6A6", fontFamily: "Roboto"},
+    precioAntes: {
+        fontSize: 16, 
+        textDecorationLine: 'line-through', 
+        color: "#999", 
+        fontFamily: "Tommy"
+    },
     productDetailsPriceDiscountPercentContainer: {marginHorizontal: 3, width: 44, padding: 2, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderColor: "#FF2F6C", borderWidth: 1},
 
 
-    pricePerUnitText: {
+    unidad: {
         fontSize: 14, 
         color: "#555", 
-        fontFamily: "Roboto", 
+        fontFamily: "TommyR", 
         marginTop: 5
     },
 
@@ -262,9 +267,9 @@ const styles = StyleSheet.create({
     productDescriptionContainer: {width: '80%', padding: 15},
     productDescriptionText: {fontSize: 18, color: "#657272", fontFamily: "Roboto"},
 
-    footerAddToCartButton: {
+    addButton: {
         paddingHorizontal: 35, 
-        borderRadius: 8, 
+        borderRadius: 30, 
         alignItems: 'center', 
         justifyContent: 'center', 
         backgroundColor: "#0a61d0", 
@@ -275,7 +280,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 2, 
         shadowRadius: 8
     },
-    footerAddToCartButtonText: {
+    addButtonText: {
         fontSize: 19, 
         paddingHorizontal: 45, 
         paddingVertical:15, 
@@ -286,5 +291,17 @@ const styles = StyleSheet.create({
 
     vidaSanaIndicatorContainer: { position: 'absolute', top: 0, left: 30, width: 50, height: 50, justifyContent: 'center', zIndex: 100},
     discountImg: {width:55, height: 55, position:"absolute", zIndex:-1, top:3, right:3},
-    productDetailsPricePercentDiscount: {textAlign: "center", fontSize: 22, color:"white", fontFamily: "RobotoB", width:40, height: 26, position:"absolute", textAlign:"center", zIndex:1, top:17, left:0, lineHeight:26},
+    descuento: {
+        textAlign: "center", 
+        fontSize: 19, 
+        color:"white", 
+        fontFamily: "RobotoB", 
+        width:40, height: 26, 
+        position:"absolute", 
+        textAlign:"center", 
+        zIndex:1, 
+        top:17, 
+        left:0, 
+        lineHeight:26
+    },
 })

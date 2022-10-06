@@ -24,7 +24,7 @@ export default class Carousel extends React.Component {
 		onTapImage: () => { },
 		showIndicator: true,
 		autoscroll: false,
-		autoScrollInterval: 8000,
+		autoScrollInterval: 5000,
 	}
 
 	constructor(props) {
