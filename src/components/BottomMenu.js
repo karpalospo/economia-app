@@ -1,5 +1,5 @@
 import React, {useState, useContext, useEffect} from "react";
-import { View, Text, TouchableOpacity, Modal } from "react-native";
+import { View, Text, TouchableOpacity, Modal, Platform } from "react-native";
 
 
 import { SignInCard } from "../components/SignInCard";
@@ -113,7 +113,7 @@ const styles = {
         position: "absolute", 
         bottom: 0, 
         left: 0,
-        paddingBottom: 20,
+        paddingBottom: Platform.OS === 'ios'? 20 : 5,
         borderTopWidth:1,
         borderColor:"#ddd",
      },

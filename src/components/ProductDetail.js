@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     productImage: {height: '100%', width: '100%',},
 
     productNameContainer: {width: '90%', marginVertical: 10},
-    productNameText: { fontSize: 22, textAlign: 'center', color: "#333", fontFamily: "Roboto" },
+    productNameText: { fontSize: 22, textAlign: 'center', color: "#333", fontFamily: "TommyM" },
     productPriceText: { fontSize: 23, textAlign: 'center', color: "#1B42CB", fontFamily: "RobotoB", margin:10 },
 
     discountContainer: {width: '100%', flexDirection: 'row', justifyContent: 'center', padding: 5},

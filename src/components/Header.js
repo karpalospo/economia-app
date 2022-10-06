@@ -1,7 +1,7 @@
 import React, {useState, useContext} from 'react';
 
 
-import { View, StyleSheet, Text, TouchableOpacity, Image, TextInput, Modal, StatusBar, SafeAreaView } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, Image, TextInput, Modal, StatusBar, SafeAreaView, Platform } from 'react-native';
 
 //import BarcodeScanner from './HeaderBarCodeScanner';
 
@@ -38,7 +38,7 @@ const Header = ({
 
     return(
         
-        <SafeAreaView style={{backgroundColor: "white", marginTop: -10}}>
+        <SafeAreaView style={{backgroundColor: "white", marginTop: Platform == "ios" ? -10 : 0}}>
             
             <StatusBar backgroundColor="#fff" barStyle="dark-content" />
 

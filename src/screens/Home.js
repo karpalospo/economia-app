@@ -100,9 +100,9 @@ const Home = ({navigation, route}) => {
                                 {/* <Button title="clear" onPress={() => clearCartItems()} /> */}
 
                                 <View style={{flexDirection:"row", justifyContent:"flex-start"}}>
-                                    <View style={styles.h2_cont}>
-                                        <Text style={styles.h2}>NUESTRAS MEJORES OFERTAS</Text>
-                                    </View>
+                     
+                                        <Text style={styles.h2}>Ofertas Especiales</Text>
+                           
                                 </View>
 
                                 <ProductList items={mejoresOfertasList} loading={mejoresLoading} />
@@ -184,14 +184,13 @@ const styles = StyleSheet.create({
 
     h2: {
         textAlign:"center",
-        color:"#ff2c6e",
-        fontSize: 17,
-        fontFamily: "RobotoB",
+        color:"#222",
+        fontSize: 22,
+        fontFamily: "Tommy",
+        paddingBottom:11,
+        paddingHorizontal:11,
 
     },
 
-    h2_cont: {
-        paddingVertical:7,
-        paddingHorizontal:20,
-    }
+
 })
