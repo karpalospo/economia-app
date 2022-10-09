@@ -109,13 +109,13 @@ const styles = StyleSheet.create({
     profileImage: {width: '100%', height: '100%'},
 
     profileEditContainer: {padding: 10, justifyContent: 'center'},
-    profileNameText: {fontSize: 20,color: "#657272", fontFamily: "RobotoB"},
+    profileNameText: {fontSize: 20,color: "#444", fontFamily: "Tommy"},
     profileEditButton: {paddingVertical: 12, paddingHorizontal:17, borderRadius: 5, backgroundColor: "#1B42CB", alignItems: 'center', marginHorizontal:7, maxWidth: 150,},
     profileEditButtonText: {fontSize: 13, color: "white", fontFamily: "RobotoB", textAlign:"center"},
 
     accountContainer: {backgroundColor:"white", marginHorizontal:10, borderRadius:8, elevation:3},
     accountInfoContainer: {borderBottomColor: "#d6d6d6", paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 0.5},
-    accountInfoTitleText: {fontSize: 13, color: "#444", fontFamily: "RobotoB"},
+    accountInfoTitleText: {fontSize: 13, color: "#444", fontFamily: "Tommy"},
     accountItemContainer: {width: '100%', flexDirection: 'row', justifyContent: 'flex-start', marginBottom: 10},
     accountItemTitleText: {fontSize: 16, color: "#888", fontFamily: "Roboto"},
     accountItemValueText: {fontSize: 16, color: "#657272", fontFamily: "RobotoB", paddingLeft: 10},

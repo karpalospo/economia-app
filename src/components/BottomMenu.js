@@ -1,9 +1,9 @@
 import React, {useState, useContext, useEffect} from "react";
-import { View, Text, TouchableOpacity, Modal, Platform } from "react-native";
+import { View, Text, TouchableOpacity, Platform } from "react-native";
 
 
-import { SignInCard } from "../components/SignInCard";
-import LocationSelector from '../components/LocationSelector';
+import Login from "./Login";
+import Ubicacion from './Ubicacion';
 import { Feather, Entypo, AntDesign  } from '@expo/vector-icons'; 
 import { UtilitiesContext } from '../context/UtilitiesContext'
 
@@ -12,37 +12,27 @@ const BottomMenu = ({navigation, showLocation = false}) => {
 
     const { location, setLocation, user } = useContext(UtilitiesContext)
     
-    const [signInVisible, setSignInVisible] = useState(false)
-    const [locationVisible, setLocationVisible] = useState(showLocation || (!location.id ? true : false))
+    const [loginVisible, setLoginVisible] = useState(false)
+    const [locationVisible, setLocationVisible] = useState(showLocation)
 
-    
-
-    showLogin = () => {
-        
+    const showLogin = () => {
         if(user.logged == undefined) {
-            console.log(user,user.logged, signInVisible)
-            return setSignInVisible(true)
+            setLoginVisible(true)
+        } else {
+            navigation.navigate('Profile')
         }
-        navigation.navigate('Profile')
-  
-        
     }
 
-    onSelectLocation = async (selectedLocation) =>
+    const onSelectLocation = async (selectedLocation) =>
     {
         setLocation(selectedLocation)
         setLocationVisible(false)
     }
 
-    onCancelSignIn = () => {
-        setSignInVisible(false)
-    }
-
-    onRegisterSignIn = () => {
-        setSignInVisible(false)
+    const onRegister = () => {
+        setLoginVisible(false)
         navigation.navigate("Registro")
     }
-
 
     return (
         <View style={styles.botonFlotanteCont}>
@@ -56,27 +46,21 @@ const BottomMenu = ({navigation, showLocation = false}) => {
             </TouchableOpacity>
             <TouchableOpacity style={styles.botonFlotante} onPress={() => showLogin()}>
                 <Feather  name="user" size={20} color="#333" />
-                <Text style={styles.botonFlotanteText}>Mi Perfil</Text>
+                <Text style={styles.botonFlotanteText}>{user.logged == undefined ? "Accede" : "Mi Perfil"}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.botonFlotante, {backgroundColor: "#FF2F6C"}]} onPress={() => setLocationVisible(true)}>
                 <Entypo name="location-pin" size={20} color="white" />
-                <Text style={[styles.botonFlotanteText, {color: "#fff", textTransform: "capitalize"}]}>{location.id ? location.name : "SELECCIONE..."}</Text>
+                <Text style={[styles.botonFlotanteText, {color: "#fff", textTransform: "capitalize"}]}>{location.id ? location.city : "SELECCIONE..."}</Text>
             </TouchableOpacity>
 
-            <SignInCard
-                visible={signInVisible} 
-                onLogin={() => setSignInVisible(false)} 
-                onCancel={onCancelSignIn} 
-                onRegister={onRegisterSignIn} 
+            <Login
+                visible={loginVisible} 
+                onLogin={() => setLoginVisible(false)} 
+                onCancel={() => setLoginVisible(false)} 
+                onRegister={onRegister} 
             />
-            <Modal
-                animationType="fade"
-                transparent={false}
-                visible={locationVisible}
-                onRequestClose={() => {}}
-            >
-                <LocationSelector onSelectLocation={(location) => onSelectLocation(location) } onCancel={() => setLocationVisible(false)} />
-            </Modal>
+            
+            <Ubicacion visible={locationVisible} onSelectLocation={location => onSelectLocation(location)} onCancel={() => setLocationVisible(false)} />
 
         </View>
     )

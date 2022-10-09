@@ -13,6 +13,9 @@ const Provider = ({ children }) => {
     const [cupones, setCuponesState] = useState({})
     const [cart, setCart] = useState({})
     const [cupon, setCuponState] = useState({})
+    const [params, setParams] = useState({
+        centroscostos: []
+    })
     const [login, setLogin] = useState(async () => {
 
         try {
@@ -32,6 +35,10 @@ const Provider = ({ children }) => {
                     itemsCount: 0
                 })
             }
+
+        
+
+
             setLoading(false)
 
         } catch (error) {
@@ -150,8 +157,6 @@ const Provider = ({ children }) => {
         return _cart
     }
 
-
-
     const value = {
         loading,
         location,
@@ -165,7 +170,9 @@ const Provider = ({ children }) => {
         setCupon,
         setCartItem,
         clearCartItems,
-        rectificarCart
+        rectificarCart,
+        params,
+        setParams
     }
 
     return (

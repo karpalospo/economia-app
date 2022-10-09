@@ -4,6 +4,8 @@ import { f, CapitalizeWord, CapitalizeWords, IsExcludedCategory } from "../utils
 import { UtilitiesContext } from '../context/UtilitiesContext'
 import Cantidad from "../components/Cantidad";
 import { ProductDetail } from "./ProductDetail";
+import Button from "../components/Button";
+
 
 const oferta = require("../../assets/icons/oferta2.png")
 
@@ -21,7 +23,7 @@ const ProductList = ({items = [], loading = false}) => {
     }
 
     const onChange = (value, item) => {
-        setCartItem(item.id, undefined, value, cart.items[item.id])
+        console.log(setCartItem(item.id, undefined, value, cart.items[item.id]))
     }
 
     return (
@@ -67,11 +69,7 @@ const ProductList = ({items = [], loading = false}) => {
 
                                 <View style={styles.addToCartContainer}>
                                     {itemCart && itemCart._quanty > 0 && <Cantidad value={itemCart._quanty} item={item} onChange={onChange} />}
-                                    {!itemCart && 
-                                    <TouchableOpacity style={styles.addToCartButton} onPress={() => addCart(item)}> 
-                                        <Text style={styles.addToCartButtonText}>AGREGAR</Text>
-                                    </TouchableOpacity>
-                                    }
+                                    {!itemCart && <Button title="AGREGAR" onPress={() => addCart(item)} /> }
                                 </View>
 
                             </View>
@@ -94,7 +92,7 @@ const styles = {
         flex:0.5, 
         margin: 1,
         paddingTop:10,
-        paddingBottom:20,
+        paddingBottom:18,
         backgroundColor: "#FFFFFF",
         borderRadius: 4
     },

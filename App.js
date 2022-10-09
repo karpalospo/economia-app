@@ -2,6 +2,7 @@ import React from 'react';
 import NavigationStack from './src/navigation/NavigationStack';
 import UtilitiesContext from './src/context/UtilitiesContext';
 import { useFonts } from 'expo-font';
+import Toast from 'react-native-toast-message';
 
 export default function App() {
 
@@ -21,6 +22,7 @@ export default function App() {
 		<>
 			<UtilitiesContext.Provider>
 				<NavigationStack />
+				<Toast />
 			</UtilitiesContext.Provider>
 		</>
 	)

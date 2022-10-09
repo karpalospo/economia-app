@@ -1,29 +1,51 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, Image} from "react-native";
-import { color } from "react-native-reanimated";
+import { LinearGradient } from 'expo-linear-gradient';
 
 const minus = require('../../assets/icons/minus.png')
 const trash = require('../../assets/icons/trash.png')
 const plus = require('../../assets/icons/plus.png')
 
-const Cantidad = ({value, onChange, item, showStock = false}) => {
+const Cantidad = ({style = 1, value, onChange, item, showStock = true}) => {
 
+    const button = (image, value) => {
+
+        if(image == 0) image = trash;
+        else if(image == 1) image = minus;
+        else image = plus;
+
+        if(style == 2) {
+            return (
+                <TouchableOpacity style={styles.button} onPress={() => onChange(value, item)} >
+                    {<Image source={image} style={[styles.ButtonImage, {tintColor: "#555", width: image == trash ? 20 : 17, height: image == trash ? 20 : 17}]} resizeMode='contain' />}
+                </TouchableOpacity>
+            )
+        }
+        return (
+            <LinearGradient
+                colors={['#33bbff', '#1B42CB']}
+                start={[1, 0]}
+                end={[1, 1]}
+                location={[0, 0.5]}
+                style={{borderRadius:17, width: 32, height: 32}}
+            >
+                <TouchableOpacity style={styles.button} onPress={() => onChange(value, item)} >
+                    {<Image source={image} style={styles.ButtonImage} resizeMode='contain' />}
+                </TouchableOpacity>
+            </LinearGradient>
+        )
+    }
 
     return (
         <View style={styles.supercontainer}>
             <View style={styles.container}>
-                <TouchableOpacity style={styles.decrementar} onPress={() => onChange(-1, item)} >
-                    {(value > 1) && <Image source={minus} tintColor="#444" style={styles.ButtonImage} resizeMode='contain' />}
-                    {value == 1 && <Image source={trash} tintColor="#444" resizeMode='contain' style={{width:18, height:18}} />}
-                </TouchableOpacity>
+                {button(value > 1 ? 1 : 0, -1)}
                 <View style={styles.quantyContainer}>
                     <Text style={styles.quantyText}>{value}</Text>
                 </View>
-                <TouchableOpacity style={styles.incrementar} onPress={() => onChange(1, item)} >
-                    {<Image source={plus} style={styles.ButtonImage} tintColor="#444" resizeMode='contain' />}
-                </TouchableOpacity>
+                {button(2, 1)}
             </View>
-            {showStock && <Text style={styles.stock}>{item.stock} Disponible{item.stock == 1 ? "" : "s"}</Text>}
+            {showStock && <Text style={[styles.stock, style != 1 ? {} : {position: "relative", top: 10}]}>{item.stock} Disponible{item.stock == 1 ? "" : "s"}</Text>}
         </View>
     )
 }
@@ -34,38 +56,48 @@ const styles = {
 
     supercontainer: {
         position: "relative",
-        marginVertical: 10
     },
 
     container: {
         flexDirection:"row", 
-        height: 36, 
-        borderRadius: 8, 
-        backgroundColor: "#F4F4F4", 
         alignItems: 'center', 
         justifyContent: "space-between",
         paddingHorizontal:8,
-        borderWidth: 1,
-        borderColor: "#ccc"
     },
     stock: {
         position: "absolute",
-        top: 42,
-        left: 0,
-        width: "100%",
+        top: 38,
+        left: "50%",
+        width: 100,
+        marginLeft:-50,
         textAlign: "center",
-        backgroundColor: "#48b0b0",
+        backgroundColor: "#eee",
         color: "#fff",
         borderRadius: 12,
         paddingVertical: 2,
-        fontSize:13,
-        fontFamily: "Roboto"
+        fontSize:12,
+        fontFamily: "Roboto",
+        color:"#333"
     },
-    ButtonImage: {width: 15, height: 15},
-    quantyText: {fontSize: 18, color: "#444", fontFamily: "RobotoB"},
-    quantyContainer: {width: 30, height: 30, justifyContent: 'center', alignItems: 'center'},
-    decrementar: {alignItems: 'center', width: 30, height: 30, marginRight:4, justifyContent: 'center'},
-    incrementar: {alignItems: 'center', width: 30, height: 30, marginLeftt:4, justifyContent: 'center'},
+    ButtonImage: {width: 18, height: 18, tintColor:"white"},
+    quantyText: {fontSize: 18, color: "#444", fontFamily: "Tommy"},
+    quantyContainer: {
+        width: 40, 
+        height: 30, 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        backgroundColor:"#f2f2f2",
+        borderWidth: 1,
+        borderColor: "#ccc",
+        borderRadius: 5,
+        marginHorizontal:10
+    },
+    button: {
+        alignItems: 'center', 
+        width: 32, 
+        height: 32, 
+        justifyContent: 'center',
+    },
 
 
 }

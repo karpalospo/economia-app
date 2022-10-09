@@ -6,25 +6,25 @@ import { UtilitiesContext } from '../context/UtilitiesContext'
 
 import { f } from "../utils/helper";
 
-import { SignInCard } from "../components/SignInCard";
-
+import Login from "../components/Login";
 import { Arrayfy } from "../global/functions";
 import { getUpdatedCartItems } from "../services/products";
 
-import ProductCard from "../components/ProductCart";
+import ProductCart from "../components/ProductCart";
+import { styles } from '../global/styles';
+import { FontAwesome5 } from '@expo/vector-icons'; 
+import Button from "../components/Button";
+import Toast from 'react-native-toast-message';
 
-const arrow = require('../../assets/icons/dropleft_arrow.png')
 const nocart = require('../../assets/nocart.png')
 
 const MIN_COMPRA_BOGOTA = 30000 
 const MIN_COMPRA_CIUDADES = 15000 
 
 
-
-
 const Cart = ({navigation}) => {
     
-    const { location, user, cart, rectificarCart } = useContext(UtilitiesContext)
+    const { location, user, cart, rectificarCart, clearCartItems } = useContext(UtilitiesContext)
     const [cartItems, setCartItems] = useState([])
     const [loading, setLoading] = useState(false)
     const [signInVisible, setSignInVisible] = useState(false)
@@ -57,6 +57,14 @@ const Cart = ({navigation}) => {
         navigation.navigate("SignUp")
     }
 
+    const showToast = () => {
+        Toast.show({
+          type: 'success',
+          text1: 'Hello',
+          text2: 'This is some something 👋'
+        });
+    }
+
     const shopNow = () => {
         if(!user.logged) {
             return Alert.alert('Atención', 'Primero debe iniciar sesión o registrarse.', [
@@ -65,74 +73,76 @@ const Cart = ({navigation}) => {
             ])
         }
         if(location.id == "11001" && cart.total < MIN_COMPRA_BOGOTA) return Alert.alert("La Economia", "El monto de la compra debe ser igual o superior a " + f(MIN_COMPRA_BOGOTA) + " para generar el pedido")
-        if(location.id != "11001" && cart.total < MIN_COMPRA_CIUDADES) return Alert.alert("La Economia", "El monto de la compra debe ser igual o superior a " + f(MIN_COMPRA_CIUDADES) + " para generar el pedido")
+        if(location.id != "11001" && cart.total < MIN_COMPRA_CIUDADES) {
+            return showToast()
+            return Alert.alert("La Economia", "El monto de la compra debe ser igual o superior a " + f(MIN_COMPRA_CIUDADES) + " para generar el pedido")
+        }
 
         navigation.navigate("Checkout")
     }
 
     return (
         <SafeAreaView style={styles.container} forceInset={{top: "never", bottom: "never"}}>
- 
-            <View style={styles.sectionWrapper}>
+            
+            <View style={_styles.header}>
+                <TouchableOpacity style={{paddingHorizontal: 5, paddingVertical:5}} onPress={() => navigation.goBack()} >
+                    <FontAwesome5 name="arrow-circle-left" size={28} color="black" />
+                </TouchableOpacity>
+                <Text style={[styles.h2, {flex:1}]}>Carrito de Compras</Text>
+                <TouchableOpacity style={{paddingHorizontal: 10, paddingVertical:5, backgroundColor:"#ee3344", borderRadius:25}} onPress={() => clearCartItems()} >
+                    <Text style={{color:"white", fontFamily: "TommyR", fontSize:14}}>Vaciar</Text>
+                </TouchableOpacity>
+            </View>
+  
 
-    
+            <View style={{flex:1, backgroundColor:"#f2f2f2"}}>
                 {!loading && cartItems.length == 0 &&
-                <View style={styles.emptyCartContainer}>
+                <View style={_styles.emptyCartContainer}>
                     <Image source={nocart} style={{width:100, height: 90}} resizeMode="contain" tintColor="#bbb" />
-                    <Text style={styles.emptyCartText}>Aún no tienes productos en tu carrito. Agrega productos al carrito para continuar con la compra.</Text>
+                    <Text style={_styles.emptyCartText}>Aún no tienes productos en tu carrito. Agrega productos al carrito para continuar con la compra.</Text>
                 </View>}
 
                 {loading && 
                 <View>
-                    <Text style={styles.emptyCartText}>Actualizando precios del carrito...</Text>
+                    <Text style={_styles.emptyCartText}>Actualizando precios del carrito...</Text>
                     <ActivityIndicator color="#1b23c0" size={22} />
                 </View>}                 
 
-           
+                {!loading && cartItems.length > 0 &&
                 <FlatList 
                     keyExtractor={(item, index) => `product_${index}`}
-                    data={loading ? [] : cartItems}
+                    data={cartItems}
+                    contentContainerStyle={{paddingBottom:70, backgroundColor:"#f2f2f2"}}
                     renderItem={({ item, index }) => {
-                        
                         let total = item.price * item._quanty
                         return (
-                            <View style={styles.productItemContainer}>
-                                <ProductCard product={item} quanty={item._quanty} total={total} />
-                            </View>
+                            <ProductCart product={item} quanty={item._quanty} total={total} />
                         )
                     }}
                 />
+                }
             
 
-                <View style={styles.purchaseDetailContainer}>
-                    <View style={{flex:0.5, paddingLeft:20, flexDirection:"row", alignItems: "center"}}>
-                        <Text>Domicilio:</Text>
-                        <Text style={styles.purchaseDetailItemText}>{f(location.homeService)}</Text>
+
+                <View style={_styles.footerContainer}>
+
+                    
+                    <View style={{flex:0.6, marginVertical:8}}>
+                        <View style={styles.rowLeft}>
+                            <Text style={_styles.label}>Subtotal:</Text>
+                            <Text style={[_styles.precioFooter, {color: "#1B42CB"}]}>{f(cart.total)}</Text>
+                        </View>
                     </View>
-                
-                    <View style={{flex:0.5, flexDirection:"row", alignItems: "center"}}>
-                        <Text>Total Carrito:</Text>
-                        <Text style={[styles.purchaseDetailItemText, {color: "#1B42CB"}]}>{f(cart.total)}</Text>
+                    <View style={{flex:0.4}}>
+                        <Button title="PAGAR" onPress={() => shopNow()} />
                     </View>
-                </View>
-
-
-                <View style={styles.footerContainer}>
-
-                    <TouchableOpacity style={styles.footerBackButton} onPress={() => navigation.goBack()} >
-                        <Image source={arrow} style={[styles.footerBackButtonImage, { tintColor: "#1B42CB"}]} resizeMode='contain' />
-                        <Text style={styles.footerBackButtonText}>REGRESAR</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.footerAddToCartButton} onPress={() => shopNow()} >
-                        <Text style={[styles.footerAddToCartButtonText, {color: "#FFFFFF"}]}>COMPRAR AHORA</Text>
-                    </TouchableOpacity>
+                    
 
                 </View>
               
             </View>
 
-            <SignInCard 
+            <Login 
                 visible={signInVisible} 
                 onLogin={() => setSignInVisible(false)} 
                 onCancel={onCancelSignIn} 
@@ -146,27 +156,18 @@ const Cart = ({navigation}) => {
 }
 export default Cart
 
-const styles = StyleSheet.create({
+const _styles = StyleSheet.create({
 
-    container: { flex: 1, backgroundColor: "white", paddingBottom: 15, paddingTop: Platform.OS == "ios" ? StatusBar.currentHeight + 40 + 10 : 15 },
-
-    purchaseDetailContainer: { 
-        paddingVertical: 15, 
-        backgroundColor: "white", 
-        alignItems: 'center', 
-        flexDirection: "row", 
-        justifyContent: "space-between",
-        borderColor: "#ddd",
-        borderTopWidth: 1
-    },
+    
+    header: {backgroundColor:"white", flexDirection:"row", alignItems:"center", justifyContent:"flex-start", borderColor: "#eee", borderBottomWidth: 2, paddingBottom:6, paddingRight:20, paddingLeft:10},
+    label: {width:67, textAlign:"right", fontFamily:"TommyR"},
     purchaseDetailItemContainer: { width: '100%', marginBottom: 5, flexDirection: 'row', justifyContent: 'space-between' },
-    purchaseDetailItemText: { fontSize: 19, color: "#333", fontFamily: "RobotoB" , paddingLeft: 7},
+    precioFooter: { fontSize: 20, color: "#333", fontFamily: "Tommy" , paddingLeft: 7},
     purchaseDetailItemTotalText: { fontSize: 16, color: "#657272", fontFamily: "Roboto" },
     purchaseDetailItemTotalValueText: { fontSize: 16, color: "#FF2F6C", fontFamily: "RobotoB"},
 
     sectionWrapper: {
         flex: 1, 
-        paddingBottom: 60,
         backgroundColor: "#f2f2f2"
     },
 
@@ -180,18 +181,20 @@ const styles = StyleSheet.create({
     emptyCartContainer: {width: '100%', padding: 15, alignItems: "center"},
     emptyCartText: {fontSize: 16, color: "#555", fontFamily: "Roboto", padding:20, textAlign:"center"},
 
-    productItemContainer: {padding: 15, backgroundColor: "#FFFFFF", borderColor: "#F4F4F4", borderTopWidth: 1.5,},
-
     footerContainer: { 
         position: 'absolute', 
-        width: '100%', 
+        width: '100%',
+        backgroundColor:"white",
+        height:60,
         flexDirection: 'row', 
-        ustifyContent: 'space-between', 
-        paddingVertical: 10, 
+        justifyContent: 'space-between',
+        alignItems: "center",
         bottom: 0,
-        backgroundColor: "white",
+        paddingHorizontal:20,
+        borderTopWidth: 2,
+        borderTopColor: "#eee"
     },
-    footerBackButton: { width: '45%', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 15, borderWidth: 2, borderColor: "#1B42CB", borderRadius: 6, marginHorizontal: "2.5%" },
+
     footerBackButtonImage: { width: 10, height: 10, tintColor: "#A5A5A5" },
     footerBackButtonText: { fontSize: 13, color: "#1B42CB", marginLeft: 10, fontFamily: "RobotoB"},
     footerAddToCartButton: { width: '45%', alignItems: 'center', padding: 15, backgroundColor: "#1B42CB", borderRadius: 6,  marginHorizontal: "2.5%" },

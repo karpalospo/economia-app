@@ -3,49 +3,69 @@ import { View, StyleSheet, FlatList, TouchableOpacity, Text } from "react-native
 import Header from "../components/Header";
 
 import Carousel from "../components/Carousel";
+
+
 import { API } from "../services/services";
-import { FormatGroupCategoryItem } from "../utils/formatter";
-import { CategoryIconCard } from "../components/CategoryIconCard";
-import  Button  from "../components/Button";
+
+import  Bola  from "../components/Bola";
 import BottomMenu from "../components/BottomMenu";
 
 import { getProducts } from "../services/products";
 import { UtilitiesContext } from '../context/UtilitiesContext'
 import ProductList from "../components/ProductList";
+import { styles } from '../global/styles';
+
+const dias = [
+
+    {id:"lunes", image: require('../../assets/icons/lun1.png'), image2: require('../../assets/icons/lun2.png'), title: "Lunes de Belleza"},
+    {id:"martes", image: require('../../assets/icons/mar1.png'), image2: require('../../assets/icons/mar2.png'), title: "Martes de Aseo, Personal y Hogar"},
+    {id:"miercoles", image: require('../../assets/icons/mie1.png'), image2: require('../../assets/icons/mie2.png'), title: "Día de la Economía"},
+    {id:"jueves", image: require('../../assets/icons/jue1.png'), image2: require('../../assets/icons/jue2.png'), title: "Jueves de Medicamentos"},
+    {id:"viernes", image: require('../../assets/icons/vie1.png'), image2: require('../../assets/icons/vie2.png'), title: "Baby Viernes"},
+    {id:"ofertas", image: require('../../assets/icons/esp1.png'), image2: require('../../assets/icons/esp2.png'), title: "Ofertas Imperdibles"},
+    {id:"estrella", image: require('../../assets/icons/est1.png'), image2: require('../../assets/icons/est2.png'), title: "Productos Estrella"},
+
+]
 
 const Home = ({navigation, route}) => {
 
 
-    const [categoryGroups, setCategoryGroups] = useState([]);
     const [banners, setBanners] = useState([]);
     const [inferior, setInferior] = useState([]);
     const [mejoresOfertasList, setMejoresOfertasList] = useState([]);
     const [mejoresLoading, setMejoresLoading] = useState(false);
+    const [showLocation, setShowLocation] = useState(false);
 
-    const { location, user, clearCartItems, setCupons } = useContext(UtilitiesContext)
+    const { location, user, setCupons, params, setParams } = useContext(UtilitiesContext)
          
     useEffect(() => {
         (async function () {
            
-            if(!location.id) return 
-  
-            let res = await API.POST.init({location: location.id, page: "home"}), categoryGroups = []
-
-            if(!res.error) {
-                setCupons(res.message.coupons)
-                setBanners(res.message.banners.superior)
-                setInferior(res.message.banners.inferior)
-            }
-
-            res = await API.GET.RetrieveGroupsOfCategories()
-            if(!res.error)
-            {
-                for (let i = 0; i < res.message.data.length; i++) categoryGroups.push(FormatGroupCategoryItem(res.message.data[i]))
-            }
-            setCategoryGroups(categoryGroups)
-
             setMejoresLoading(true)
             setMejoresOfertasList([])
+
+            let res = await API.POST.init({location: location.id, page: "home"}), d;
+
+            if(!res.error) {
+                d = res.message
+                setCupons(d.coupons)
+                setBanners(d.banners.superior)
+                setInferior(d.banners.inferior)
+                setParams({
+                    dia: d.day,
+                    centroscostos: d.centroscostos,
+                    date: d.date,
+                    noPromoCats: d.noPromoCats,
+                    noPromoSubs: d.noPromoSubs,
+                    proveedores: d.proveedores,
+                    user: d.user,
+                    pestrella: 433
+                })
+                if(!location.id) {
+                    return setShowLocation(true)
+                }
+            }
+  
             const products = await getProducts("[sales]", location.id, user)
             setMejoresOfertasList(products.products.slice(0, 8))
             setMejoresLoading(false)
@@ -54,11 +74,6 @@ const Home = ({navigation, route}) => {
     }, [location])
     
 
-    const onTapCategory = (id, title, categories) => 
-    {
-        navigation.navigate('Categorias', {title, id, categories});
-    }
-    
     const onTapImage = (image) => {
 
         if(image.data.codes) {
@@ -68,8 +83,19 @@ const Home = ({navigation, route}) => {
         }
     }
 
+    const tapBola = (item) => {
+        if(item.id == "ofertas") navigation.navigate("Busqueda", {search: "[sales]"})
+        if(item.id == "estrella") navigation.navigate("Busqueda", {search: "[banner]" + params.pestrella})
+        if(item.id == "lunes") navigation.navigate("Busqueda", {search: "[banner]391"})
+        if(item.id == "martes") navigation.navigate("Busqueda", {search: "[banner]393"})
+        if(item.id == "miercoles") navigation.navigate("Busqueda", {search: "[cats]medicamentos/medicamentos"})
+        if(item.id == "jueves") navigation.navigate("Busqueda", {search: "[cats]medicamentos/medicamentos"})
+        if(item.id == "viernes") navigation.navigate("Busqueda", {search: "[banner]388"})
+
+    }
+
     return(
-        <View style={styles.container}>
+        <View style={_styles.container}>
 
             <Header navigation={navigation} />
 
@@ -83,33 +109,43 @@ const Home = ({navigation, route}) => {
                         
                         <Carousel autoscroll={true} images={banners} onTapImage={onTapImage} />
 
-                        <View style={styles.categoriesContainer}>
+                        <View style={_styles.diasCont}>
+                            {!mejoresLoading &&
                             <FlatList
                                 keyExtractor={(item, index) => `groups_${index}`}
                                 horizontal={true}
-                                data={categoryGroups}
+                                data={dias}
                                 showsHorizontalScrollIndicator={false}
-                                renderItem={({ item, index }) => 
-                                    <CategoryIconCard category={item} onTapCategory={onTapCategory} />
-                                }
-                            />
+                                renderItem={({ item, index }) => {
+                                    let dia = params.dia
+                                    if(dia == 0) {
+                                        if(index == 2 || index == 3 || index == 4) return
+                                    } else if(dia == 5) {
+                                        if(index < 5 && index != dia && index != dia - 1 && index != dia - 2) return
+                                    } else if(dia == 6) {
+                                        if(index < 5 && index != dia && index != dia - 1 && index != dia - 2 && index != dia - 3) return
+                                    } else {
+                                        if(index < 5 && index != dia && index != dia - 1) return
+                                    }
+                                    return (
+                                        <Bola item={item} enable={index + 1 == dia || index > 4} onTap={() => tapBola(item)} />
+                                    )
+                                }}
+                            />}
                         </View>
+                        
         
                             <View>
 
-                                {/* <Button title="clear" onPress={() => clearCartItems()} /> */}
-
-                                <View style={{flexDirection:"row", justifyContent:"flex-start"}}>
-                     
-                                        <Text style={styles.h2}>Ofertas Especiales</Text>
-                           
+                                <View style={{flexDirection:"row", justifyContent:"flex-start", paddingBottom:8}}>
+                                    <Text style={styles.h2}>Ofertas Especiales</Text>
                                 </View>
 
                                 <ProductList items={mejoresOfertasList} loading={mejoresLoading} />
 
                                 <View style={{flexDirection:"row", justifyContent:"center"}}>
-                                    <TouchableOpacity onPress={() => navigation.navigate('Busqueda', {search: "[sales]", location: location.id})} style={styles.ofertas_cont}>
-                                        <Text style={styles.ofertas}>VER TODAS LAS OFERTAS</Text>
+                                    <TouchableOpacity onPress={() => navigation.navigate('Busqueda', {search: "[sales]", location: location.id})} style={_styles.ofertasCont}>
+                                        <Text style={_styles.ofertas}>VER TODAS LAS OFERTAS</Text>
                                     </TouchableOpacity>
                                 </View>
 
@@ -123,7 +159,7 @@ const Home = ({navigation, route}) => {
                 }
             />
 
-            <BottomMenu navigation={navigation} />
+            <BottomMenu navigation={navigation} showLocation={showLocation} />
             
         </View>
     )
@@ -135,34 +171,20 @@ const Home = ({navigation, route}) => {
 
 export default Home
 
-const styles = StyleSheet.create({
+const _styles = StyleSheet.create({
     container: {flex: 1, position:"relative"},
 
     ayudaText: {backgroundColor:"#eee", position:"absolute", width:60, height:17, left:0, bottom:-8, color:"#333", textAlign:"center", fontSize: 12, borderRadius:7, borderWidth: 0.5, borderColor:"#aaa"},
-    categoriesContainer: {
-        marginHorizontal:5,
+    diasCont: {
+        marginVertical: 20,
+        marginHorizontal: 10,
         backgroundColor: 'white', 
-        paddingBottom: 10, 
-        paddingTop:10,
-        marginVertical:20,
-        minHeight:100,
+        minHeight: 100,
         borderRadius: 15
     }, 
-    categoriesTitleText: {margin: 15, fontSize: 14, fontFamily: "Roboto", color: "#A5A5A5"}, 
-    categoryItemConteiner: {alignItems: 'center', width: 100, height: 120, padding: 5}, 
-    categoryItemImageContainer: {width: 70, height: 70, borderRadius: 35, overflow: 'hidden',},
-    categoryItemImage: {width: '100%', height: '100%'},
-    categoryItemNameText: {fontSize: 10, color: "#657272", textAlign: 'center', marginTop: 5, fontFamily: "Roboto"},
 
-    featuredProductItemContainer: {margin: 10},
 
-    sponsoredBrandItemContainer: {margin: 10},
-
-    bestSellerItemContainer: {margin: 10},
-
-    loadingIndicatorContainer: {width: '100%', alignItems: 'center', padding: 15, },
-
-    ofertas_cont: {
+    ofertasCont: {
         marginVertical: 20, 
         paddingHorizontal: 30, 
         borderRadius:7, 
@@ -182,15 +204,7 @@ const styles = StyleSheet.create({
         fontFamily: "RobotoB",
     },
 
-    h2: {
-        textAlign:"center",
-        color:"#222",
-        fontSize: 22,
-        fontFamily: "Tommy",
-        paddingBottom:11,
-        paddingHorizontal:11,
 
-    },
 
 
 })

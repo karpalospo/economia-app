@@ -2,12 +2,12 @@ import React, {useState, useEffect, useContext} from 'react';
 import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Image, Modal, Alert, Dimensions, ActivityIndicator } from "react-native";
 
 import { f, CapitalizeWord, IsExcludedCategory } from "../utils/helper";
-import { API, HELPER_API, URL, } from "../services/services";
+import { HELPER_API, URL, } from "../services/services";
 
-import { FormatProduct } from "../utils/formatter";
 
 import Carousel from "./Carousel";
-import Cantidad from "../components/Cantidad";
+import Cantidad from "./Cantidad";
+import Button from "./Button";
 import { getProducts } from "../services/products";
 
 import { UtilitiesContext } from '../context/UtilitiesContext'
@@ -22,17 +22,18 @@ export const ProductDetail = ({
     productID,
     onClose = () => {},
     visible = false,
-    navigation,
+    navigation
 }) => {
 
 
     const [loading, setLoading] = useState(true)
-    const [zoomMode, setZoomMode] = useState(false)
+    const [loadingGallery, setLoadingGallery] = useState(false)
 
     const [product, setProduct] = useState({})
     const [gallery, setGallery] = useState([])
 
     const { location, user, cart, setCartItem } = useContext(UtilitiesContext)
+
 
     useEffect(() => {
 
@@ -64,7 +65,7 @@ export const ProductDetail = ({
         }
         
         if(p) {
-   
+            setLoadingGallery(true)
             _gallery = [{source: p.bigImage}]
             const imageRes = await HELPER_API.HEAD.CheckIfImageExists(p.image.uri)
             if(imageRes.error)
@@ -82,6 +83,7 @@ export const ProductDetail = ({
             for (let index = 0; index < gallery2.length; index++) {
                 _gallery.push({source: {uri: gallery2[index]}})
             }
+            setLoadingGallery(false)
                 
         } else {   
             Alert.alert('Atención', 'No se pudo obtener la información de este producto.',
@@ -135,7 +137,11 @@ export const ProductDetail = ({
                     </View>
 
                     <ScrollView>
-                        {loading && <ActivityIndicator color={"#1B42CB"} />}
+                        {loading && 
+                        <View>
+                            <Text style={{textAlign: "center"}}>Leyendo información del producto...</Text>
+                        </View>
+                        }
                         {!loading && product &&
                         <View style={styles.scrollContainer}>
                             
@@ -146,14 +152,16 @@ export const ProductDetail = ({
                             </View>
                             }
                             
-                            {!loading &&
+                            {loadingGallery && <View style={{height:200, flexDirection:"row", alignItems:"center"}} ><ActivityIndicator color={"#1B42CB"} /></View>}
+                            {!loadingGallery &&
                             <Carousel  
                                 autoscroll={true}
-                                imageStyle = {{height: 240}}
-                                images2={gallery}
+                                imageStyle = {{height: 220}}
+                                images2={loading ? [] : gallery}
                                 imageResizeMode={'contain'} 
-                            />}
-                        
+                            />
+                            }
+
                             <Text style={styles.proveedor}>{product.proveedor}</Text>
                             <View style={styles.productNameContainer}>
                                 <Text style={styles.nombre}>{CapitalizeWord(product.name)}</Text>
@@ -169,17 +177,9 @@ export const ProductDetail = ({
                             <View style={{height: 20}} />
                             <View style={styles.addToCartContainer}>
                                 {itemCart && itemCart._quanty > 0 && <Cantidad value={itemCart._quanty} item={product} onChange={onChange} />}
-                                {!itemCart && 
-                                <TouchableOpacity style={styles.addButton} onPress={() => addCart(product)}>
-                                    <Text style={styles.addButtonText}>AGREGAR</Text>
-                                </TouchableOpacity>
-                                }
+                                {!itemCart && <Button title="AGREGAR AL CARRITO" onPress={() => addCart(product)} />}
                             </View>
                             
-                            <View style={{backgroundColor:"#48b0b0", marginTop: 10, borderRadius:20, paddingHorizontal:20, paddingVertical: 3}}>
-                                <Text style={styles.disponibles}>{product.stock} Disponibles</Text>
-                            </View>
-
                             {product.additionalDescription != '' &&
                             <View style={{width:"100%", paddingHorizontal:20}}>
                                 <View style={styles.productDescriptionTitleContainer}>
@@ -197,15 +197,6 @@ export const ProductDetail = ({
 
                     </ScrollView>
 
-                    <Modal
-                        animationType='fade'
-                        transparent={true}
-                        visible={zoomMode}
-                        onRequestClose={() => {}}
-                    >
-                    
-                    </Modal>
-                
                 </View>
 
             </View>
@@ -224,9 +215,7 @@ const styles = StyleSheet.create({
         marginVertical:10, 
         color: "#aaa"
     },
-    disponibles: {
-        color:"white", 
-    },
+
     productImageContainer: { width: height * .35, height: height * .35, alignItems: 'center', },
     productImage: {height: '100%', width: '100%',},
 

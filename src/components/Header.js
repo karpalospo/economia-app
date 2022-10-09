@@ -31,14 +31,14 @@ const Header = ({
     goToSearchProduct = () => 
     {
         if(searchFunction) searchFunction(searchText)
-        else navigation.navigate('Busqueda', {search: searchText, location: location.id})
+        else navigation.navigate('Busqueda', {search: searchText})
         setSearchText("")
     }
 
 
     return(
         
-        <SafeAreaView style={{backgroundColor: "white", marginTop: Platform == "ios" ? -10 : 0}}>
+        <SafeAreaView style={{backgroundColor: "white", marginTop: Platform == "ios" ? -10 : 0, borderBottomColor:"#ddd", borderBottomWidth: 1}}>
             
             <StatusBar backgroundColor="#fff" barStyle="dark-content" />
 
@@ -122,7 +122,7 @@ export default Header
 const styles = StyleSheet.create({
 
 
-    headerContainer: {backgroundColor: "white", paddingHorizontal: 15, paddingBottom: 7, alignItems: 'center', borderBottomWidth:2, borderBottomColor: "#F2f2f2"},
+    headerContainer: {paddingHorizontal: 15, paddingBottom: 7, alignItems: 'center'},
 
     headerSlot: {width: '33.3%'},
 

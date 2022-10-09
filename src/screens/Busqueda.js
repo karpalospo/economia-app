@@ -82,7 +82,7 @@ const Busqueda = (props) => {
                 renderItem={({ item, index }) => 
                     <View style={{flex: 1}}>
                         <View style={styles.resultadoCont}>
-                            <View style={{flexDirection:"row", alignItems:"center", paddingRight:10, flex: 1}}>
+                            <View style={styles.resultado}>
                                 <Text style={{fontSize: 16, color: "#666"}}>Mostrando </Text>
                                 <Text style={{fontSize: 16, color: "#333", fontFamily: "RobotoB"}}>{productList.length}</Text>
                                 <Text style={{fontSize: 16, color: "#666"}}> productos para </Text>    
@@ -113,16 +113,11 @@ const styles = StyleSheet.create({
 
     container: {flex: 1},
     resultadoCont: {
-        flexDirection: "row", 
         paddingLeft:15, 
-        backgroundColor:"white", 
         padding:8, 
-        borderBottomWidth: 0.5, 
-        borderBottomColor: "#999", 
-        justifyContent:"flex-start",
-        alignItems: "flex-start",
         paddingVertical: 12
     },
+    resultado: {flexDirection:"row", alignItems:"center", paddingRight:10, flex: 1, flexWrap:"wrap"},
     loadingContainer: {width: '100%', alignItems: 'center', padding: 10},
     
     productsContainer: {justifyContent: 'space-between', width: '100%', alignItems: 'flex-start', paddingHorizontal: '10%',marginTop: "0.1%"},

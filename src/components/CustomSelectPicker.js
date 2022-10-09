@@ -7,7 +7,7 @@ export const CustomSelectPicker = ({
     items = [],
     onValueChange = () => {},
     style = {}, 
-    customLabelKey = 'label', // overwrites the default selected item label key, default `label`  
+    customLabelKey = 'label',
     placeHolder,
     InitialselectedItem
 }) => {
@@ -33,7 +33,7 @@ export const CustomSelectPicker = ({
             >
                 <Text style={{ fontSize: 16, flex:1 }}>{selectedItem ? selectedItem : placeHolder}</Text>
                 <View style={{ position: 'absolute', justifyContent: 'center', right: 5 }} pointerEvents="none">
-                    <Image source={require('../../assets/icons/dropdown_arrow.png')} style={{width: 16, height: 16, marginRight:8}} resizeMode='contain'  />
+                    <Image source={require('../../assets/icons/dropdown_arrow.png')} style={{width: 13, height: 13, marginRight:8}} resizeMode='contain'  />
                 </View>
             </TouchableOpacity>
             <CustomModalDropdown 

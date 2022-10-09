@@ -1,23 +1,24 @@
 import React, {useState, useContext, useEffect }  from 'react';
-import { View, StyleSheet, Image, ScrollView, Text, TextInput, TouchableOpacity, Alert, Linking, StatusBar, SafeAreaView } from "react-native";
-import Checkbox from '../components/Checkbox';
+import { View, Image, ScrollView, Text, TextInput, TouchableOpacity, Alert, Linking, SafeAreaView } from "react-native";
 import { API } from '../services/services';
 import  Button  from "../components/Button";
+import  Title  from "../components/Title";
 import { ValidateEmail } from '../utils/helper';
-
+import { styles } from '../global/styles';
 import { UtilitiesContext } from '../context/UtilitiesContext'
+import BouncyCheckbox from "react-native-bouncy-checkbox";
 
-const volver = require('../../assets/icons/volver.png')
-const logo = require('../../assets/la_economia_h.png')
 const arrow_up = require('../../assets/icons/dropup_arrow.png')
 const arrow_down = require('../../assets/icons/dropdown_arrow.png')
+const eye = require("../../assets/icons/eye.png")
+const eyeno = require("../../assets/icons/eye-no.png")
 
 const Registro = ({navigation}) => {
 
     const [panelExpanded, setPanelExpanded] = useState(false)
     const [loading, setLoading] = useState(false)
     const [terms, setTerms] = useState(false)
-
+    const [pass_visible, setPass_visible] = useState(true);
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
@@ -28,52 +29,25 @@ const Registro = ({navigation}) => {
 
     const { setUser } = useContext(UtilitiesContext)
 
-    const vidaSanaSignUp = async (document, firstname, secondname, lastname, secondlastname, dateOfBirth, address, phone, cellphone, email, terms, gender) => {
-
-        /*const vidaSanaRes = await VIDA_SANA_API.POST.PerformVidaSanaSignUp(this.location, document, { document, firstname, secondname, lastname, secondlastname, dateOfBirth, address, phone, cellphone, email, terms, gender }, "APP")
-
-        this.setState({ loading: false })
-        if (!vidaSanaRes.error) {
-            Alert.alert('Felicidades', 'Se ha completado el proceso de registro.')
-            navigation.navigate('Home')
-        }
-        else {
-            Alert.alert('Atención', 'No se pudo completar tu registro en Vida Sana. ¿Desea volver a intentarlo?', [
-                { text: 'Si', onPress: async () => { await this.vidaSanaSignUp(document, firstname, secondname, lastname, secondlastname, dateOfBirth, address, phone, cellphone, email, terms, gender) } },
-                {
-                    text: 'No', onPress: () => {
-                        Alert.alert('Felicidades', "Se ha completado el proceso de registro.")
-                        navigation.navigate('Home')
-                    }
-                },
-            ])
-        }*/
-    }
-
     const login = async (email, password) => {
-        
-        if(email != '' && password != '') {
-
-            setLoading(true)
-            const res = await API.POST.signin(email + "::" + password)
-            setLoading(false)
-            if(!res.error && res.message.nit) {
-                setUser({
-                    logged: true,
-                    nit: res.message.nit,
-                    token: res.message.auth_token,
-                    nombres: res.message.nombres,
-                    email: res.message.email
-                })
-            }
+        setLoading(true)
+        const res = await API.POST.signin(email + "::" + password)
+        setLoading(false)
+        if(!res.error && res.message.nit) {
+            setUser({
+                logged: true,
+                nit: res.message.nit,
+                token: res.message.auth_token,
+                nombres: res.message.nombres,
+                email: res.message.email
+            })
         }
-        else Alert.alert('Atención', "Debe llenar todos los campos");
     }
 
     const signUp = async () => {
      
         let msg = '';
-
+console.log(terms)
         if (terms) {
 
             const checkFields = checkEmptyOrInvalidFields();
@@ -136,134 +110,127 @@ const Registro = ({navigation}) => {
 
     return (
         <SafeAreaView style={styles.container} forceInset={{top: "never", bottom: "never"}}>
-
+            
+            <View style={{paddingHorizontal:10, borderBottomWidth: 2, borderColor: "#ddd"}}>
+                <Title title="Crear una cuenta" onBack={() => navigation.goBack()} />
+            </View>
+            
             <ScrollView>
 
-                <View style={styles.imageContainer}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={{marginLeft:17, width:35, height:35, borderRadius:18, backgroundColor:"white", alignItems:"center", justifyContent:"center", elevation: 10}}>
-                        <Image source={volver} tintColor="#333" resizeMode='contain' style={{width:16, height:16}} />
-                    </TouchableOpacity>
-                    <View style={{flex:1, alignItems:"center"}}><Image style={{width: 150, height: 40}} resizeMode='contain' source={logo} /></View>
-                    <View style={{width:60}}></View>
-                </View>
+                <View style={{paddingHorizontal:25, paddingVertical:20}}>
 
-    
-                <View style={{paddingHorizontal:25, backgroundColor: "#f0f0f0"}}>
+                    <Text style={_styles.titleText}>DATOS BÁSICOS</Text>
 
+                    <View style={[_styles.inputContainer, { borderColor: true ? _styles.inputContainer.borderColor : "#DF0109" }]}>
+                        <TextInput
+                            editable={!loading}
+                            placeholder='Nombres'
+                            placeholderTextColor={"#A5A5A5"}
+                            style={_styles.input}
+                            onChangeText={text => setName(text)}
+                            value={name}
+                        />
+                    </View>
 
-                    <View style={styles.sectionContainer}>
+                    <View style={[_styles.inputContainer, { borderColor: true ? _styles.inputContainer.borderColor : "#DF0109" }]}>
+                        <TextInput
+                            editable={!loading}
+                            placeholder='Apellidos'
+                            style={_styles.input}
+                            onChangeText={text => setLastname(text)}
+                            value={lastname}
+                        />
+                    </View>
 
-                        <View style={styles.titleContainer}>
-                            <Text style={styles.titleText}>DATOS BÁSICOS</Text>
-                        </View>
+                    <View style={[_styles.inputContainer, { borderColor: true ? _styles.inputContainer.borderColor : "#DF0109" }]}>
+                        <TextInput
+                            editable={!loading}
+                            placeholder='Cédula Ciudadanía'
+                            keyboardType='numeric'
+                            style={_styles.input}
+                            onChangeText={text => setDocument(text)}
+                            value={document}
+                        />
+                    </View>
 
-                        <View style={[styles.inputContainer, { borderColor: true ? styles.inputContainer.borderColor : "#DF0109" }]}>
+                    <View style={[_styles.inputContainer, { borderColor: true ? _styles.inputContainer.borderColor : "#DF0109" }]}>
+                        <TextInput
+                            editable={!loading}
+                            placeholder='Correo Electrónico'
+                            autoCapitalize='none'
+                            style={_styles.input}
+                            keyboardType='email-address'
+                            onChangeText={text => setEmail(text)}
+                            value={email}
+                        />
+                    </View>
+
+                    <View style={[_styles.inputContainer, {flexDirection: "row"}, { borderColor: true ? _styles.inputContainer.borderColor : "#DF0109" }]}>
+                
+                        <View style={{flex:1}}>
                             <TextInput
-                                placeholder='Nombres'
-                                placeholderTextColor={"#A5A5A5"}
-                                style={styles.inputStyle}
-                                onChangeText={text => setName(text)}
-                                value={name}
-                            />
-                        </View>
-
-                        <View style={[styles.inputContainer, { borderColor: true ? styles.inputContainer.borderColor : "#DF0109" }]}>
-                            <TextInput
-                                placeholder='Apellidos'
-                                style={styles.inputStyle}
-                                onChangeText={text => setLastname(text)}
-                                value={lastname}
-                            />
-                        </View>
-
-                        <View style={[styles.inputContainer, { borderColor: true ? styles.inputContainer.borderColor : "#DF0109" }]}>
-                            <TextInput
-                                placeholder='Cédula Ciudadanía'
-                                keyboardType='numeric'
-                                style={styles.inputStyle}
-                                onChangeText={text => setDocument(text)}
-                                value={document}
-                            />
-                        </View>
-
-                        <View style={[styles.inputContainer, { borderColor: true ? styles.inputContainer.borderColor : "#DF0109" }]}>
-                            <TextInput
-                                placeholder='Correo Electrónico'
-                                autoCapitalize='none'
-                                style={styles.inputStyle}
-                                keyboardType='email-address'
-                                onChangeText={text => setEmail(text)}
-                                value={email}
-                            />
-                        </View>
-
-                        <View style={[styles.inputContainer, { borderColor: true ? styles.inputContainer.borderColor : "#DF0109" }]}>
-                            <TextInput
+                                editable={!loading}
                                 placeholder='Contraseña'
-                                secureTextEntry={true}
-                                style={styles.inputStyle}
-                                onChangeText={text => setPassword(text)}
+                                secureTextEntry={pass_visible}
+                                style={_styles.input}
+                                onChangeText={text => {setPassword(text); setConfirmPassword(text)}}
                                 value={password}
                             />
                         </View>
-
-                        <View style={styles.inputContainer}>
-                            <TextInput
-                                placeholder='Repetir contraseña'
-                                secureTextEntry={true}
-                                style={styles.inputStyle}
-                                onChangeText={text => setConfirmPassword(text)}
-                                value={confirmPassword}
-                            />
-                        </View>
-
-
-                        <View style={[styles.inputContainer, { borderColor: true ? styles.inputContainer.borderColor : "#DF0109" }]}>
-                            <TextInput
-                                placeholder='Teléfono Celular'
-                                keyboardType='numeric'
-                                style={styles.inputStyle}
-                                onChangeText={text => setCellphone(text)}
-                                value={cellphone}
-                            />
-                        </View>
-
-                        
-
+                        <TouchableOpacity activeOpacity={0.95} style={{width:40, justifyContent:"center", alignItems:"center"}} onPress={() => setPass_visible(!pass_visible)}>
+                            <Image source={pass_visible ? eyeno : eye} style={{width:24, height: 24}} resizeMode="contain" />
+                        </TouchableOpacity>
+                      
                     </View>
 
-
-                    <View style={styles.termsContainer}>
-                        <Checkbox checked={terms} onPress={() => setTerms(!terms)} />
-                        <Text style={styles.termsText}>Acepto <Text style={styles.linkText} onPress={() => Linking.openURL("https://www.droguerialaeconomia.com/empresa/politicas")}>políticas y términos de uso</Text></Text>
+                    <View style={[_styles.inputContainer, { borderColor: true ? _styles.inputContainer.borderColor : "#DF0109" }]}>
+                        <TextInput
+                            editable={!loading}
+                            placeholder='Teléfono Celular'
+                            keyboardType='numeric'
+                            style={_styles.input}
+                            onChangeText={text => setCellphone(text)}
+                            value={cellphone}
+                        />
                     </View>
 
-                    {/*
-                    <View style={styles.termsContainer}>
-                        <Checkbox checked={this.state.vidaSana} color={COLORS._0A1E63} size={20} onPress={() => this.setState({ vidaSana: !this.state.vidaSana })} />
-                        <Text style={styles.termsText}>Acepto ser parte del Club Vida Sana.</Text>
-                    </View>*/}
+                    <View style={{height:20}} />
+                    <Text style={_styles.titleText}>TÉRMINOS Y CONDICIONES</Text>
 
-                    <View style={styles.eticosPanelContainer}>
-                        <TouchableOpacity style={styles.eticosPanelButton} onPress={() => setPanelExpanded(!panelExpanded)}>
-                            <Text style={styles.eticosPanelButtonText}>Leer políticas de privacidad...</Text>
-                            <Image style={styles.eticosPanelCollapseIcon} resizeMode='contain' source={panelExpanded ? arrow_up : arrow_down} />
+                    <View style={_styles.termsContainer}>
+
+                        <BouncyCheckbox
+                            size={30}
+                            fillColor="#333"
+                            unfillColor="white"
+                            iconStyle={{ borderColor: "#999", borderRadius: 8 }}
+                            innerIconStyle={{ borderWidth: 1, borderRadius: 8 }}
+                            onPress={isChecked => setTerms(isChecked)}
+                        />
+                        <Text style={_styles.termsText}>Acepto</Text>
+                        <Text style={_styles.linkButton} onPress={() => Linking.openURL("https://www.droguerialaeconomia.com/empresa/politicas")}>políticas y términos de uso</Text>
+                    </View>
+
+                    <View style={_styles.eticosPanelContainer}>
+                        <TouchableOpacity style={_styles.eticosPanelButton} onPress={() => setPanelExpanded(!panelExpanded)}>
+                            <Text style={_styles.eticosPanelButtonText}>{panelExpanded ? "" : "Ver políticas de privacidad..."}</Text>
+                            <Image style={_styles.eticosPanelCollapseIcon} resizeMode='contain' source={panelExpanded ? arrow_up : arrow_down} />
                         </TouchableOpacity>
 
                         {panelExpanded &&
-                        <View style={styles.eticosPanelExpanded}>
-                            <Text style={styles.eticosPanelExpandedText}>ETICOS SERRANO GOMEZ LTDA le informa que los datos suministrados a traves de este sitio web seran tratados para efecto de gestionar la informacion que se requiere por usted de nuestra organizacion, peticion que conlleva el consentimiento de forma inequivoca para el tratamiento de sus datos en el sentido antes dicho. Le rogamos abstenerse de suministrar informacion de caracter sensible, si no es absolutamente necesario para resolver su inquietud. Puede consultar la politica de Proteccion de datos de ETICOS en el siguiente enlace web <Text style={styles.linkText} onPress={() => Linking.openURL("https://www.droguerialaeconomia.com/empresa/habeas")}>www.droguerialaeconomia.com/empresa/habeas</Text> y ejecer sus derechos a conocer, actualizar, rectificar su informacion, o bien solicitar la cancelacion del proceso en el siguiente correo electronico <Text style={styles.linkText} onPress={() => Linking.openURL(`mailto:habeasdata@eticos.com`)}>habeasdata@eticos.com</Text>.</Text>
+                        <View style={_styles.eticosPanelExpanded}>
+                            <Text style={_styles.eticosPanelExpandedText}>ETICOS SERRANO GOMEZ LTDA. le informa que los datos suministrados a traves de este sitio web seran tratados para efecto de gestionar la informacion que se requiere por usted de nuestra organizacion, peticion que conlleva el consentimiento de forma inequivoca para el tratamiento de sus datos en el sentido antes dicho. Le rogamos abstenerse de suministrar informacion de caracter sensible, si no es absolutamente necesario para resolver su inquietud. Puede consultar la politica de Proteccion de datos de ETICOS en el siguiente enlace web <Text style={_styles.linkText} onPress={() => Linking.openURL("https://www.droguerialaeconomia.com/empresa/habeas")}>www.droguerialaeconomia.com/empresa/habeas</Text> y ejecer sus derechos a conocer, actualizar, rectificar su informacion, o bien solicitar la cancelacion del proceso en el siguiente correo electronico <Text style={_styles.linkText} onPress={() => Linking.openURL(`mailto:habeasdata@eticos.com`)}>habeasdata@eticos.com</Text>.</Text>
                         </View>
                         }
                     </View>
 
                     <View style={{height:40}} />
 
-                    
-                    <Button styleMode='blue' title="REGISTRARME" loading={loading} onPress={() => signUp()} />
-                    
+                    <View style={{marginHorizontal:30}}>
+                        <Button title="REGISTRARME" loading={loading} onPress={() => signUp()} />
+                    </View>
 
-                    <View style={{height:60}} />
+                    <View style={{height:30}} />
                     
                 </View>
 
@@ -281,40 +248,26 @@ const Registro = ({navigation}) => {
 
 export default Registro
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "white", paddingTop: Platform.OS == "ios" ? StatusBar.currentHeight + 40 + 10 : 15 },
-
-    imageContainer: { alignItems: 'center', flexDirection:"row", backgroundColor:"white", paddingBottom: 20, borderBottomColor:"#ccc", borderBottomWidth:1 },
+const _styles = {
 
 
-    sectionContainer: { width: '100%', marginVertical: 15 },
-    titleContainer: { marginVertical: 10, width: '100%' },
-    titleText: { fontSize: 14, color: "#444", fontFamily: "RobotoB" },
-    inputContainer: { marginVertical: 5, paddingHorizontal:10, backgroundColor: "white", borderRadius:6, borderWidth:1, borderColor: "#ddd"},
-    inputStyle: { color: "#657272", fontSize: 16, paddingVertical: 8, fontFamily: "Roboto" },
+    titleText: { marginVertical: 10, fontSize: 14, color: "#444", fontFamily: "Tommy" },
 
-    locationSectionContainer: { width: '100%', borderBottomWidth: 1, borderBottomColor: "#B2C3C3", marginVertical: 2, flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, alignItems: 'center' },
-    locationText: { color: "#A5A5A5", backgroundColor: "#FFFFFF", fontSize: 18, fontFamily: "Roboto" },
-    locationImage: { width: 10, height: 10, },
+    inputContainer: { marginVertical: 7, paddingHorizontal:10, backgroundColor: "white", borderRadius:25, borderWidth:1, borderColor: "#ddd"},
+    input: { color: "#444", fontSize: 16, paddingVertical: 5, paddingLeft: 5, fontFamily: "TommyR" },
 
-    datePickerContainer: { width: '100%', margin: 10, justifyContent: 'flex-start', },
-    datePickerInputStyle: { width: '100%', color: "#657272", backgroundColor: "#FFFFFF", fontSize: 18, paddingVertical: 10, alignItems: 'flex-start', borderWidth: 0, fontFamily: "Roboto" },
-    datePickerPlaceholderText: { fontSize: 18, color: "#A5A5A5", fontFamily: "Roboto" },
-    datePickerText: { fontSize: 18, color: "#657272", fontFamily: "Roboto" },
+    termsContainer: { marginTop:5, marginBottom: 25, alignItems: 'center', flexDirection: 'row' },
+    termsText: { fontSize: 16, color: "#666", marginRight: 8, fontFamily: "TommyR" },
 
-    termsContainer: { margin: 20, marginLeft:10, alignItems: 'center', flexDirection: 'row' },
-    termsText: { fontSize: 16, color: "#666", margin: 10, fontFamily: "Roboto" },
-
-    signUpButton: { padding: 13, backgroundColor: "#1B42CB", alignItems: 'center', marginVertical: 15, borderRadius: 6, marginHorizontal:10 },
-    signUpButtonText: { fontSize: 18, color: "#FFFFFF", fontFamily: "RobotoB" },
 
     linkText: { color: "#1111A0", fontFamily: "Roboto", textDecorationLine:"underline"  },
+    linkButton: {fontSize: 15, color: "#464646", fontFamily: "Tommy", textAlign:"center", backgroundColor:"#f2f2f2" , paddingVertical:7, paddingHorizontal:10, borderRadius:20},
 
-    eticosPanelContainer: { width: '100%', padding: 20, borderWidth: 1, borderColor: "#bbb", borderRadius: 6, backgroundColor: "#fffee0" },
+    eticosPanelContainer: { width: '100%', padding: 15, borderRadius: 10, backgroundColor: "#ffeecc" },
     eticosPanelButton: { width: '100%', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     eticosPanelButtonText: { fontSize: 16, color: "#555", fontFamily: "Roboto" },
-    eticosPanelCollapseIcon: { width: 15, height: 15 },
+    eticosPanelCollapseIcon: { width: 15, height: 15, tintColor: "#222" },
     eticosPanelExpanded: { width: '100%', marginVertical: 10 },
     eticosPanelExpandedText: { fontSize: 16, color: "#666", fontFamily: "Roboto", textAlign:"justify", lineHeight:24 },
 
-})
+}
