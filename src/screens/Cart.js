@@ -1,20 +1,19 @@
 import React, {useState, useEffect, useContext} from 'react';
 import { View, StyleSheet, Text, FlatList, StatusBar, TouchableOpacity, Image, Alert, ActivityIndicator, SafeAreaView } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
-import { sortByKey} from "../utils/helper";
-import { UtilitiesContext } from '../context/UtilitiesContext'
 
-import { f } from "../utils/helper";
+import { UtilitiesContext } from '../context/UtilitiesContext'
+import { Arrayfy, sortByKey, f, CapitalizeWord } from "../global/functions";
 
 import Login from "../components/Login";
-import { Arrayfy } from "../global/functions";
+
 import { getUpdatedCartItems } from "../services/products";
 
 import ProductCart from "../components/ProductCart";
 import { styles } from '../global/styles';
 import { FontAwesome5 } from '@expo/vector-icons'; 
 import Button from "../components/Button";
-import Toast from 'react-native-toast-message';
+
 
 const nocart = require('../../assets/nocart.png')
 
@@ -24,23 +23,25 @@ const MIN_COMPRA_CIUDADES = 15000
 
 const Cart = ({navigation}) => {
     
-    const { location, user, cart, rectificarCart, clearCartItems } = useContext(UtilitiesContext)
+    const { location, user, cart, rectificarCart, clearCartItems, params } = useContext(UtilitiesContext)
     const [cartItems, setCartItems] = useState([])
     const [loading, setLoading] = useState(false)
     const [signInVisible, setSignInVisible] = useState(false)
 
+    const getCartItems = async () => {
+        const cartItemsArray = Arrayfy(cart.items)
+        setCartItems([])
+        if(cartItemsArray.length == 0) return
+        setLoading(true)
+        const retificados = await getUpdatedCartItems(cartItemsArray, location.id)
+        const newCart = await rectificarCart(retificados)
+        setLoading(false)
+        setCartItems(sortByKey(Arrayfy(newCart.items), "_date", "desc"))
+    }
+
     useFocusEffect(
         React.useCallback(() => {
-            (async () => {
-                const cartItemsArray = Arrayfy(cart.items)
-                setCartItems([])
-                if(cartItemsArray.length == 0) return
-                setLoading(true)
-                const retificados = await getUpdatedCartItems(cartItemsArray, location.id)
-                const newCart = await rectificarCart(retificados)
-                setLoading(false)
-                setCartItems(sortByKey(Arrayfy(newCart.items), "_date", "desc"))
-            })()
+            (async () => await getCartItems())
         }, [])
     )
 
@@ -48,22 +49,17 @@ const Cart = ({navigation}) => {
         setCartItems(sortByKey(Arrayfy(cart.items), "_date", "desc"))
     }, [cart])
 
-    onCancelSignIn = () => {
+
+    const onCancelSignIn = () => {
         setSignInVisible(false)
     }
 
-    onRegisterSignIn = () => {
+    const onRegisterSignIn = () => {
         setSignInVisible(false)
-        navigation.navigate("SignUp")
+        navigation.navigate("Registro")
     }
 
-    const showToast = () => {
-        Toast.show({
-          type: 'success',
-          text1: 'Hello',
-          text2: 'This is some something 👋'
-        });
-    }
+
 
     const shopNow = () => {
         if(!user.logged) {
@@ -74,7 +70,6 @@ const Cart = ({navigation}) => {
         }
         if(location.id == "11001" && cart.total < MIN_COMPRA_BOGOTA) return Alert.alert("La Economia", "El monto de la compra debe ser igual o superior a " + f(MIN_COMPRA_BOGOTA) + " para generar el pedido")
         if(location.id != "11001" && cart.total < MIN_COMPRA_CIUDADES) {
-            return showToast()
             return Alert.alert("La Economia", "El monto de la compra debe ser igual o superior a " + f(MIN_COMPRA_CIUDADES) + " para generar el pedido")
         }
 
@@ -98,8 +93,12 @@ const Cart = ({navigation}) => {
             <View style={{flex:1, backgroundColor:"#f2f2f2"}}>
                 {!loading && cartItems.length == 0 &&
                 <View style={_styles.emptyCartContainer}>
-                    <Image source={nocart} style={{width:100, height: 90}} resizeMode="contain" tintColor="#bbb" />
+                    <Image source={nocart} style={{width:100, height: 90, tintColor:"#bbb"}} resizeMode="contain" />
                     <Text style={_styles.emptyCartText}>Aún no tienes productos en tu carrito. Agrega productos al carrito para continuar con la compra.</Text>
+                    <View style={{height:20}} />
+                    <TouchableOpacity onPress={() => navigation.navigate('Busqueda', {search: "[sales]", location: location.id})} style={_styles.ofertasCont}>
+                        <Text style={_styles.ofertas}>VER TODAS LAS OFERTAS</Text>
+                    </TouchableOpacity>
                 </View>}
 
                 {loading && 
@@ -112,7 +111,7 @@ const Cart = ({navigation}) => {
                 <FlatList 
                     keyExtractor={(item, index) => `product_${index}`}
                     data={cartItems}
-                    contentContainerStyle={{paddingBottom:70, backgroundColor:"#f2f2f2"}}
+                    contentContainerStyle={{paddingBottom:130, backgroundColor:"#f2f2f2"}}
                     renderItem={({ item, index }) => {
                         let total = item.price * item._quanty
                         return (
@@ -122,21 +121,21 @@ const Cart = ({navigation}) => {
                 />
                 }
             
-
-
                 <View style={_styles.footerContainer}>
-
                     
-                    <View style={{flex:0.6, marginVertical:8}}>
-                        <View style={styles.rowLeft}>
-                            <Text style={_styles.label}>Subtotal:</Text>
-                            <Text style={[_styles.precioFooter, {color: "#1B42CB"}]}>{f(cart.total)}</Text>
+                    <Text style={{fontFamily:"TommyL", fontSize:14, color:"#666", paddingVertical:6}}>Tus productos fueron calculados con base en la ciudad de <Text style={{fontFamily:"TommyR", color: "#333"}}>{CapitalizeWord(params.cc.city)}</Text></Text>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: "center"}}>
+                        <View style={{flex:0.6, marginVertical:8}}>
+                        
+                            <View style={styles.rowLeft}>
+                                <Text style={_styles.label}>Subtotal:</Text>
+                                <Text style={[_styles.precioFooter, {color: "#1B42CB"}]}>{f(loading ? "-" : cart.total)}</Text>
+                            </View>
+                        </View>
+                        <View style={{flex:0.4}}>
+                            <Button title="PAGAR" onPress={() => shopNow()} />
                         </View>
                     </View>
-                    <View style={{flex:0.4}}>
-                        <Button title="PAGAR" onPress={() => shopNow()} />
-                    </View>
-                    
 
                 </View>
               
@@ -158,7 +157,26 @@ export default Cart
 
 const _styles = StyleSheet.create({
 
-    
+    ofertas: {
+        textAlign:"center", 
+        padding:12, 
+        fontSize: 14, 
+        color: "white", 
+        fontFamily: "RobotoB",
+    },
+
+    ofertasCont: {
+        marginVertical: 20, 
+        paddingHorizontal: 30, 
+        borderRadius:7, 
+        backgroundColor: "#ff2c6e",
+        elevation: 6,
+        shadowColor: "rgba(0,0,0,0.3)", 
+        shadowOffset: {width: 1, heigth: 2}, 
+        shadowOpacity: 2, 
+        shadowRadius: 8
+    },
+
     header: {backgroundColor:"white", flexDirection:"row", alignItems:"center", justifyContent:"flex-start", borderColor: "#eee", borderBottomWidth: 2, paddingBottom:6, paddingRight:20, paddingLeft:10},
     label: {width:67, textAlign:"right", fontFamily:"TommyR"},
     purchaseDetailItemContainer: { width: '100%', marginBottom: 5, flexDirection: 'row', justifyContent: 'space-between' },
@@ -185,10 +203,7 @@ const _styles = StyleSheet.create({
         position: 'absolute', 
         width: '100%',
         backgroundColor:"white",
-        height:60,
-        flexDirection: 'row', 
-        justifyContent: 'space-between',
-        alignItems: "center",
+        height:110,
         bottom: 0,
         paddingHorizontal:20,
         borderTopWidth: 2,

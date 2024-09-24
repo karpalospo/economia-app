@@ -8,6 +8,7 @@ const Provider = ({ children }) => {
 
     const [location, setLocationState] = useState({})
     const [loading, setLoading] = useState(false)
+    const [mustShowLocation, setMustShowLocation] = useState(false)
 
     const [user, setUserState] = useState({})
     const [cupones, setCuponesState] = useState({})
@@ -116,7 +117,7 @@ const Provider = ({ children }) => {
         ;
         setCart(newCart)
         AsyncStorage.setItem('cart', JSON.stringify(newCart));
-        AsyncStorage.removeItem('location');
+        //AsyncStorage.removeItem('location');
     }
 
     function processCart(items) {
@@ -172,7 +173,9 @@ const Provider = ({ children }) => {
         clearCartItems,
         rectificarCart,
         params,
-        setParams
+        setParams,
+        mustShowLocation,
+        setMustShowLocation
     }
 
     return (

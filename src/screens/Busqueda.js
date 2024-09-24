@@ -3,16 +3,10 @@ import { Text, View, StyleSheet, TouchableOpacity, Image, FlatList } from 'react
 
 
 import Header from '../components/Header';
-
 import { getProducts } from "../services/products";
-
 import ProductList from "../components/ProductList";
-
 import BottomMenu from "../components/BottomMenu";
-
 import { UtilitiesContext } from '../context/UtilitiesContext'
-
-
 
 
 const Busqueda = (props) => {
@@ -54,7 +48,7 @@ const Busqueda = (props) => {
     return (
         <View style={styles.container}>
 
-            <Header navigation={props.navigation} searchFunction={searchProducts}/>
+            <Header navigation={props.navigation} searchFunction={searchProducts} mode="short"/>
 
             {loading &&
                 <View>

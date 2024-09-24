@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, FlatList, TouchableOpacity, Image} from "react-native";
-
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Pagos = ({items, selected=-1, onChange = () => {}}) => {
 
@@ -12,14 +12,21 @@ const Pagos = ({items, selected=-1, onChange = () => {}}) => {
                 horizontal={true}
                 renderItem={({ item, index }) => {
                     return (
-                        <TouchableOpacity style={[styles.item, {backgroundColor: (item.id == selected) ? "#dde" : styles.item.backgroundColor}]} onPress={() => onChange(item.id)} activeOpacity={0.7}>
-                            <View style={{flexDirection: "row", justifyContent:"center"}} >
-                                <Image source={item.icon} resizeMode='contain' style={styles.paymentIcon} />
-                            </View>
-                            <View style={styles.paymentNameContainer}>
-                                <Text style={[styles.paymentMethodText, {color: (item.id == selected) ? "#1B42CB" : styles.paymentMethodText.color}]}>{item.name}</Text>
-                            </View>
-                        </TouchableOpacity>
+                        <LinearGradient
+                            colors={(item.id == selected) ? ['#f2f2f2', '#bbddff'] : ['#fff', '#eee']}
+                            start={[1, 0]}
+                            end={[1, 1]}
+                            style={{borderRadius:10, marginHorizontal: 6,}}
+                        >
+                            <TouchableOpacity style={[styles.item,  (item.id == selected) ? {borderColor: "#999"} : {}]} onPress={() => onChange(item.id)} activeOpacity={0.7}>
+                                <View style={{flexDirection: "row", justifyContent:"center"}} >
+                                    <Image source={item.icon} resizeMode='contain' style={styles.icon} />
+                                </View>
+                                <View style={styles.itemCont}>
+                                    <Text style={[styles.label, (item.id == selected) ? {fontFamily: "TommyR", color:"black"} : {}]}>{item.name}</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </LinearGradient>
                     )
                 }}
             />
@@ -32,19 +39,16 @@ export default Pagos
 const styles = {
     container: { paddingVertical: 10, paddingHorizontal: 20},
     item: {
-        marginHorizontal: 8,
-        marginVertical: 5, 
-        backgroundColor: "#f2f2f2",
-        width: 100,
+        width: 90,
         justifyContent: "center",
         alignItems:"center",
-        padding:5,
+        padding:4,
         borderRadius: 10,
-        borderColor: "#ddd",
-        borderWidth: 1
+        borderColor: "#f2f2f2",
+        borderWidth: 0.5
     },
 
-    paymentIcon: {width: 50, height: 50},
-    paymentNameContainer: {alignItems: 'flex-start', justifyContent: 'center', paddingHorizontal: 10,},
-    paymentMethodText: { fontSize: 14, paddingTop:6, color: "#657272", fontFamily: "Roboto" },
+    icon: {width: 45, height: 45},
+    itemCont: {alignItems: 'flex-start', justifyContent: 'center', paddingHorizontal: 10,},
+    label: { fontSize: 12, paddingTop:6, color: "#777", fontFamily: "TommyR" },
 }

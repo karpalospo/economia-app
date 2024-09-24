@@ -1,18 +1,17 @@
 import React, {useState, useContext, useEffect } from "react";
 import { View, StyleSheet, FlatList, TouchableOpacity, Text } from "react-native";
+import { useFocusEffect } from '@react-navigation/native';
+
 import Header from "../components/Header";
-
 import Carousel from "../components/Carousel";
-
-
-import { API } from "../services/services";
-
 import  Bola  from "../components/Bola";
 import BottomMenu from "../components/BottomMenu";
+import ProductList from "../components/ProductList";
 
+import { API } from "../services/services";
 import { getProducts } from "../services/products";
 import { UtilitiesContext } from '../context/UtilitiesContext'
-import ProductList from "../components/ProductList";
+import * as Updates from 'expo-updates';
 import { styles } from '../global/styles';
 
 const dias = [
@@ -27,8 +26,7 @@ const dias = [
 
 ]
 
-const Home = ({navigation, route}) => {
-
+const Home = ({navigation}) => {
 
     const [banners, setBanners] = useState([]);
     const [inferior, setInferior] = useState([]);
@@ -54,14 +52,15 @@ const Home = ({navigation, route}) => {
                 setParams({
                     dia: d.day,
                     centroscostos: d.centroscostos,
+                    cc: d.current_centrocosto,
                     date: d.date,
                     noPromoCats: d.noPromoCats,
                     noPromoSubs: d.noPromoSubs,
                     proveedores: d.proveedores,
                     user: d.user,
-                    pestrella: 433
+                    pestrella: d.pestrella
                 })
-                if(!location.id) {
+                if(location.id == undefined) {  
                     return setShowLocation(true)
                 }
             }
@@ -72,7 +71,31 @@ const Home = ({navigation, route}) => {
          
         })()
     }, [location])
-    
+
+    useFocusEffect(
+        React.useCallback(() => {
+            //checkUpdates()
+        }, [])
+    );
+
+    // const checkUpdates = async () => {
+    //     Updates.checkForUpdateAsync().then((res) => {
+    //         if (res.isAvailable === true) {
+    //             getNewVersion()
+    //         }
+    //     }).catch((e) => console.log('Error de update', e))
+    // }
+
+    const getNewVersion = async () => {
+        Updates.fetchUpdateAsync().then((res) => {
+            if (res.isNew === true) {
+                Updates.reloadAsync()
+                .then((res) => console.log(res))
+                .catch((e) => console.log('Ups!', 'Ha ocurrido un error'))
+            }
+        }).catch((e) => {})
+    }
+
 
     const onTapImage = (image) => {
 
@@ -111,12 +134,9 @@ const Home = ({navigation, route}) => {
 
                         <View style={_styles.diasCont}>
                             {!mejoresLoading &&
-                            <FlatList
-                                keyExtractor={(item, index) => `groups_${index}`}
-                                horizontal={true}
-                                data={dias}
-                                showsHorizontalScrollIndicator={false}
-                                renderItem={({ item, index }) => {
+
+                            <View style={{flexDirection:"row", justifyContent:"space-between"}}>
+                                {dias.map((item, index) => {
                                     let dia = params.dia
                                     if(dia == 0) {
                                         if(index == 2 || index == 3 || index == 4) return
@@ -128,10 +148,11 @@ const Home = ({navigation, route}) => {
                                         if(index < 5 && index != dia && index != dia - 1) return
                                     }
                                     return (
-                                        <Bola item={item} enable={index + 1 == dia || index > 4} onTap={() => tapBola(item)} />
+                                        <Bola key={index} item={item} enable={index + 1 == dia || index > 4} onTap={() => tapBola(item)} />
                                     )
-                                }}
-                            />}
+                                })}
+                            </View>
+                            }
                         </View>
                         
         
@@ -182,7 +203,6 @@ const _styles = StyleSheet.create({
         minHeight: 100,
         borderRadius: 15
     }, 
-
 
     ofertasCont: {
         marginVertical: 20, 

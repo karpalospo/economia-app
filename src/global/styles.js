@@ -1,4 +1,4 @@
-import { StatusBar } from "react-native"
+import { StatusBar, Platform  } from "react-native"
 
 export const COLORS = {
     mainBlue: "#1B42CB",
@@ -34,7 +34,16 @@ export const styles = {
         color:"#222",
         fontSize: 21,
         fontFamily: "Tommy",
-        paddingHorizontal:11,
+        paddingHorizontal:10,
+
+    },
+
+    h4: {
+        textAlign:"left",
+        color:"#333",
+        fontSize: 18,
+        fontFamily: "Tommy",
+        paddingHorizontal:5,
 
     },
 }

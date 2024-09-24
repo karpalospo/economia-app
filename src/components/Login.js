@@ -113,7 +113,7 @@ const Login = ({ onRegister = () => {}, onLogin = () => {}, visible = false, onC
                         <TouchableOpacity style={_styles.button} onPress={() => setPasswordModal(false)}>
                             <Text style={_styles.buttonText}>Olvidé mi contraseña</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={[styles.rowLeft, _styles.button]} onPress={onRegister}>
+                        <TouchableOpacity style={_styles.button} onPress={onRegister}>
                             <Text style={_styles.buttonText}>Crear una cuenta nueva</Text>
                         </TouchableOpacity>
                     </View>

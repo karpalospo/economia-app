@@ -10,10 +10,24 @@ import { UtilitiesContext } from '../context/UtilitiesContext'
 
 const BottomMenu = ({navigation, showLocation = false}) => {
 
-    const { location, setLocation, user } = useContext(UtilitiesContext)
+    const { location, setLocation, user, mustShowLocation, setMustShowLocation } = useContext(UtilitiesContext)
     
     const [loginVisible, setLoginVisible] = useState(false)
-    const [locationVisible, setLocationVisible] = useState(showLocation)
+    const [locationVisible, setLocationVisible] = useState(false)
+
+    useEffect(() => {
+        if(showLocation) {
+            setLocationVisible(true)
+        }
+    }, [showLocation])
+
+    useEffect(() => {
+        if(mustShowLocation) {
+            setLocationVisible(true)
+            setMustShowLocation(false)
+        }
+    }, [mustShowLocation])
+
 
     const showLogin = () => {
         if(user.logged == undefined) {
@@ -40,7 +54,7 @@ const BottomMenu = ({navigation, showLocation = false}) => {
                 <Feather  name="home" size={20} color="#333" />
                 <Text style={styles.botonFlotanteText}>Home</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.botonFlotante} onPress={() => {}}>
+            <TouchableOpacity style={styles.botonFlotante} onPress={() => navigation.navigate('Categorias')}>
                 <AntDesign name="appstore-o" size={20} color="#333" />
                 <Text style={styles.botonFlotanteText}>Categorias</Text>
             </TouchableOpacity>
@@ -60,7 +74,7 @@ const BottomMenu = ({navigation, showLocation = false}) => {
                 onRegister={onRegister} 
             />
             
-            <Ubicacion visible={locationVisible} onSelectLocation={location => onSelectLocation(location)} onCancel={() => setLocationVisible(false)} />
+            <Ubicacion visible={locationVisible} onSelectLocation={location => onSelectLocation(location)} onCancel={location.id == undefined ? false : () => setLocationVisible(false)} />
 
         </View>
     )

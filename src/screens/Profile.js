@@ -3,94 +3,94 @@ import { View, StyleSheet, Text, TouchableOpacity, Image, SafeAreaView } from "r
 
 import { UtilitiesContext } from '../context/UtilitiesContext'
 
-import Header from "../components/Header";
-
+import Title from "../components/Title";
+import { styles } from '../global/styles';
 import BottomMenu from "../components/BottomMenu";
+import { ScrollView } from "react-native-gesture-handler";
+import { Ionicons } from '@expo/vector-icons'; 
 
 const Profile = ({navigation}) => {
 
     const { setUser, user } = useContext(UtilitiesContext)
 
+
+    const MyButton = ({title, onPress}) => {
+        return (
+            <TouchableOpacity style={_styles.optionButton} onPress={onPress}>
+                <Text style={_styles.label2}>{title}</Text>
+                <Ionicons name="ios-chevron-forward" size={24} color="black" />
+            </TouchableOpacity>
+        )
+    }
+
     return(
-        <SafeAreaView style={styles.container} forceInset={{top: "never", bottom: "never"}}>
+        <SafeAreaView style={_styles.container} forceInset={{top: "never", bottom: "never"}}>
             
-            <Header navigation={navigation} />
-
-            {user.email != '' &&
-            <View style={styles.profileContainer}>
-                
-                <View style={styles.profileImageContainer}>
-                    <Image style={styles.profileImage} source={require('../../assets/icons/profile_image.png')} />
+            <ScrollView>
+                <View style={{backgroundColor: "white", padding:5, borderBottomWidth: 2, borderBottomColor: "#eee"}} >
+                    <Title title="Mi Perfíl" />
                 </View>
 
-                <View style={styles.profileEditContainer}>
-                    <Text style={styles.profileNameText}>{user.nombres}</Text>
-                </View>
-
-            </View>
-            }
-
-            <View style={{flexDirection:"row", justifyContent:"center"}}>
-
-                <TouchableOpacity style={styles.profileEditButton} onPress={() => {}}>
-                    <Text style={styles.profileEditButtonText}>EDITAR PERFIL</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.profileEditButton, {backgroundColor: "#FF1412"}]} onPress={() => {setUser({}), navigation.navigate("Home")}}>
-                    <Text style={styles.profileEditButtonText}>CERRAR SESIÓN</Text>
-                </TouchableOpacity>
-
-            </View>
-
-            <View style={{height:20}} />
-
-
-            {user.email != '' &&
-            <View style={styles.accountContainer}>
-
-                <View style={styles.accountInfoContainer}>
-                    <Text style={styles.accountInfoTitleText}>DATOS DE LA CUENTA</Text>
-                </View>
-
-                <View style={{height:20}} />
-                <View style={styles.optionsContainer}>
-
-                    {user.nombres &&
-                    <View style={{paddingHorizontal:13, width:"100%"}} >
-                        <View style={styles.accountItemContainer}>
-                            <Text style={styles.accountItemTitleText}>Nombre de usuario</Text>
-                            <View><Text style={styles.accountItemValueText}>{user.nombres.trim().split(' ')[0]}</Text></View>
-                        </View>
-
-                        <View style={styles.accountItemContainer}>
-                            <Text style={styles.accountItemTitleText}>E-mail</Text>
-                            <Text style={styles.accountItemValueText}>{user.email}</Text>
-                        </View>
-                    </View>
-                    }
-
-
-                    <View style={{height:10}} />
-                    <TouchableOpacity style={styles.optionButton} onPress={() => {}}>
-                        <Text style={styles.accountItemTitleText}>Mis últimos Pedidos</Text>
-                        <Image source={require('../../assets/icons/dropright_arrow.png')} resizeMode='contain' style={styles.optionButtonIcon} />
-                    </TouchableOpacity>
+                {user.email != '' &&
+                <View style={_styles.profileContainer}>
                     
-                    <TouchableOpacity style={styles.optionButton} onPress={() => {}}>
-                        <Text style={styles.accountItemTitleText}>Mis direcciones guardadas</Text>
-                        <Image source={require('../../assets/icons/dropright_arrow.png')} resizeMode='contain' style={styles.optionButtonIcon} />
-                    </TouchableOpacity>
-                    <View style={{height:5}} />
+                    <View style={_styles.profileImageContainer}>
+                        <Image style={_styles.profileImage} source={require('../../assets/icons/profile_image.png')} />
+                    </View>
+
+                    <View style={_styles.profileEditContainer}>
+                        <Text style={_styles.profileNameText}>{user.nombres}</Text>
+                    </View>
+
+                    <View style={[styles.rowCenter, {marginTop:10, marginBottom:20}]} >
+                        <TouchableOpacity style={_styles.button} onPress={() => {setUser({}), navigation.navigate("Home")}}>
+                            <Text style={_styles.buttonText}>CERRAR SESIÓN</Text>
+                        </TouchableOpacity>
+                    </View>
 
                 </View>
+                }
 
+   
 
-            </View>}
+                {user.email != '' &&
+                <View style={_styles.accountContainer}>
 
-                                
-            <View style={styles.eticosSerranoContainer}>
-                <Text style={styles.eticosSerranoText}>Powered by <Text style={{fontFamily: "RobotoB"}}>Eticos Serrano</Text></Text>
-            </View>
+                    <View style={_styles.infoCont}>
+                        <Text style={_styles.title}>DATOS DE LA CUENTA</Text>
+                    </View>
 
+                    <View style={{height:20}} />
+                    <View style={_styles.optionsContainer}>
+
+                        <View style={{paddingHorizontal:13, width:"100%"}} >
+                            <View style={_styles.itemCont}>
+                                <Text style={_styles.label}>Nombre</Text>
+                                <View><Text style={_styles.value}>{user.nombres}</Text></View>
+                            </View>
+
+                            <View style={_styles.itemCont}>
+                                <Text style={_styles.label}>E-mail</Text>
+                                <Text style={_styles.value}>{user.email}</Text>
+                            </View>
+                        </View>
+                        <View style={{height:20}} />
+
+                        <MyButton title="Editar mi perfíl" onPress={() => {}} />
+                        <MyButton title="Mis últimos Pedidos" onPress={() => {}} />
+                        <MyButton title="Mis direcciones guardadas" onPress={() => {}} />
+                        
+                        <View style={{height:5}} />
+
+                    </View>
+
+                </View>}
+                                    
+                <View style={_styles.eticosSerranoContainer}>
+                    <Text style={_styles.eticosSerranoText}>Powered by <Text style={{fontFamily: "RobotoB"}}>Eticos Ltda. Ver.4.0.3</Text></Text>
+                </View>
+
+            </ScrollView>
             <BottomMenu navigation={navigation} />
 
         </SafeAreaView>
@@ -101,7 +101,8 @@ const Profile = ({navigation}) => {
 
 export default Profile 
 
-const styles = StyleSheet.create({
+const _styles = {
+    
     container: {flex: 1, position:"relative"},
 
     profileContainer: {padding: 20, paddingTop:10, justifyContent:"center", alignItems:"center"},
@@ -110,20 +111,31 @@ const styles = StyleSheet.create({
 
     profileEditContainer: {padding: 10, justifyContent: 'center'},
     profileNameText: {fontSize: 20,color: "#444", fontFamily: "Tommy"},
-    profileEditButton: {paddingVertical: 12, paddingHorizontal:17, borderRadius: 5, backgroundColor: "#1B42CB", alignItems: 'center', marginHorizontal:7, maxWidth: 150,},
-    profileEditButtonText: {fontSize: 13, color: "white", fontFamily: "RobotoB", textAlign:"center"},
+    button: {paddingVertical: 7, paddingHorizontal:23, borderRadius: 5, backgroundColor: "#FF2F6C", borderRadius:25, alignItems: 'center', marginHorizontal:7},
+    buttonText: {fontSize: 13, color: "#fff", fontFamily: "Tommy", textAlign:"center"},
 
     accountContainer: {backgroundColor:"white", marginHorizontal:10, borderRadius:8, elevation:3},
-    accountInfoContainer: {borderBottomColor: "#d6d6d6", paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 0.5},
-    accountInfoTitleText: {fontSize: 13, color: "#444", fontFamily: "Tommy"},
-    accountItemContainer: {width: '100%', flexDirection: 'row', justifyContent: 'flex-start', marginBottom: 10},
-    accountItemTitleText: {fontSize: 16, color: "#888", fontFamily: "Roboto"},
-    accountItemValueText: {fontSize: 16, color: "#657272", fontFamily: "RobotoB", paddingLeft: 10},
+    infoCont: {borderBottomColor: "#d6d6d6", paddingHorizontal: 15, paddingVertical: 12, borderBottomWidth: 0.5},
+    title: {fontSize: 13, color: "#444", fontFamily: "Tommy"},
+    itemCont: {width: '100%', flexDirection: 'row', justifyContent: 'flex-start', marginBottom: 10},
+    label: {fontSize: 15, color: "#666", fontFamily: "Roboto", width:80, textAlign: "right", paddingRight: 10},
+    value: {fontSize: 15, color: "#333", fontFamily: "RobotoB"},
+
+    label2: {fontSize: 15, color: "#444", fontFamily: "TommyR"},
 
     optionsContainer: {alignItems: 'center', paddingHorizontal: 15,},
-    optionButton: {width: '100%', flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderColor: "#eee", paddingVertical: 15, paddingHorizontal: 10, alignItems: 'center'},
+    optionButton: {
+        width: '100%', 
+        flexDirection: 'row', 
+        justifyContent: 'space-between', 
+        borderTopWidth: 1, 
+        borderColor: "#eee", 
+        paddingVertical: 15, 
+        paddingHorizontal: 5, 
+        alignItems: 'center'
+    },
     optionButtonIcon: {width: 10, height: 10},
 
     eticosSerranoContainer: { alignItems: 'flex-end', marginTop: 12, marginRight:18},
     eticosSerranoText: {fontSize: 13, color: "#999", fontFamily: "Roboto"},
-})
+}

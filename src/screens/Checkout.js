@@ -1,21 +1,20 @@
 import React, { useState, useEffect, useContext }  from "react";
-import { View, StyleSheet, Text, TouchableOpacity, Image, FlatList, TextInput, Platform, StatusBar, Alert, Modal, ActivityIndicator, SafeAreaView, Dimensions } from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity, FlatList, TextInput, Platform, Alert, Modal, ActivityIndicator, SafeAreaView, Dimensions } from "react-native";
 
 import AutoHeightWebView from 'react-native-autoheight-webview'
 import { UtilitiesContext } from '../context/UtilitiesContext'
 
-import { f } from '../utils/helper';
 import { API } from '../services/services';
 import { Direcciones } from "../components/Direcciones";
 import  Pagos  from "../components/Pagos";
 import  Button  from "../components/Button";
-import BottomMenu from "../components/BottomMenu";
 import Cupones from "../components/Cupones";
 import AddAddress from "../components/AddAddress";
-
-import { Arrayfy } from "../global/functions";
-
-const down = require('../../assets/icons/dropdown_arrow.png')
+import Title from "../components/Title";
+import { styles } from '../global/styles';
+import { Arrayfy, f, CapitalizeWord } from "../global/functions";
+import { FontAwesome  } from '@expo/vector-icons'; 
+import TextArea from "../components/TextArea";
 
 const MIN_COMPRA_BOGOTA = 30000 
 const MIN_COMPRA_CIUDADES = 15000 
@@ -33,11 +32,11 @@ const pagosOnline = [
 
 const Checkout = ({navigation}) => {
     
-    const { location, cart, setCupon, cupon, user, clearCartItems } = useContext(UtilitiesContext)
-
+    const { cart, setCupon, cupon, user, setUser, clearCartItems, params, setMustShowLocation } = useContext(UtilitiesContext)
 
     const [orderDiscount, setOrderDiscount] = useState(0)
     const [couponName, setCouponName] = useState("")
+    const [especificaciones, setEspecificaciones] = useState("")
     const [couponToOrder, setCouponToOrder] = useState({Aplica:false})
     const [selectedMethod, setSelectedMethod] = useState(-1)
     const [selectedAddress, setSelectedAddress] = useState(-1)
@@ -47,6 +46,7 @@ const Checkout = ({navigation}) => {
     const [currentPedido, setCurrentPedido] = useState("");
 
     const [loading, setLoading] = useState(false)
+    const [loadingAddress, setLoadingAddress] = useState(false)
     const [modalPSEVisible, setModalPSEVisible] = useState(false)
     const [modalAddressVisible, setModalAddressVisible] = useState(false)
     
@@ -67,11 +67,19 @@ const Checkout = ({navigation}) => {
         (async () => {
             if(addresses.length == 0) getAddresses()
         })()
-    })
+    }, [addresses])
 
     const getAddresses = async() => {
-        const res = await API.POST.PerformRetrieveAddressList(user.nit, user.nombres, user.email, user.token)
-        setAddresses(res.message.data)
+        setLoadingAddress(true)
+        const res = await API.POST.getAddresses(user.nit, user.nombres, user.email, user.token)
+        setLoadingAddress(false)
+        if(res.message.data == undefined) {
+            if(res.message.message.indexOf("privilegios") > -1) {
+                Alert.alert('Error de autenticación', "Se ha iniciado sesión en otro dispositivo. Para continuar en este dispositivo inicie sesión nuevamente.")
+                await setUser({})
+                navigation.navigate("Home")
+            }
+        } else setAddresses(res.message.data)
     }
 
     const checkCoupon = async(coupon) => 
@@ -89,7 +97,7 @@ const Checkout = ({navigation}) => {
 
             function setError(msg) {
                 error = true;
-                Alert.alert('Atención', msg)
+                Alert.alert('Error de Cupón', msg)
             }
      
             if(!error) {   
@@ -101,7 +109,7 @@ const Checkout = ({navigation}) => {
                     res = await API.POST.PerformValidateTypeOfCoupon(cupon.Condicion, Arrayfy(cart.items).map(product => ({codigo: product.id, price: product.price, cantidad: product._quanty})))
                     setLoading(false)
 
-                    if(res.error) setError(res.message.Messag)
+                    if(res.error) setError(res.message.Message)
                     else if(res.message.ValorProductos < cupon.VlrMinimo) setError(`El cupón ${cupon.NombreCupon} solo es válido para compras mínimas de ${f(cupon.VlrMinimo)}. Aplica para ${cupon.Descripcion}.`)
                     
                 } else Alert.alert(`El cupón ${cupon.NombreCupon} por valor de ${cupon.ValorCupon} ha sido aplicado al pedido`)
@@ -130,12 +138,10 @@ const Checkout = ({navigation}) => {
     const checkoutOrder = async () => 
     {
 
+        let metodoPago, direccion, productos = [], cc = params.cc;
 
-        let metodoPago, direccion, productos = [];
-        
-
-        if(location.id == "11001" && cart.total < MIN_COMPRA_BOGOTA) return Alert.alert("La Economia", "El monto de la compra debe ser igual o superior a " + f(MIN_COMPRA_BOGOTA) + " para generar el pedido")
-        if(location.id != "11001" && cart.total < MIN_COMPRA_CIUDADES) return Alert.alert("La Economia", "El monto de la compra debe ser igual o superior a " + f(MIN_COMPRA_CIUDADES) + " para generar el pedido")
+        if(cc.id == "11001" && cart.total < MIN_COMPRA_BOGOTA) return Alert.alert("La Economia", "El monto de la compra debe ser igual o superior a " + f(MIN_COMPRA_BOGOTA) + " para generar el pedido")
+        if(cc.id != "11001" && cart.total < MIN_COMPRA_CIUDADES) return Alert.alert("La Economia", "El monto de la compra debe ser igual o superior a " + f(MIN_COMPRA_CIUDADES) + " para generar el pedido")
 
         if(couponName != "" && !couponToOrder.IdCupon) return Alert.alert("La Economia", "Tiene un cupon sin aplicar, presione el boton APLICAR.")
         if(selectedMethod < 0) return Alert.alert("La Economia", "Seleccione un método de pago")
@@ -165,7 +171,7 @@ const Checkout = ({navigation}) => {
 
         if(productos.length == 0) return Alert.alert("La Economia", "No hay productos en el carrito")
 
-        productos.push({codigo: "999992", descripcion: "domicilio", price: location.homeService, stock:1, idoferta:0, cantidad: 1, descuento:0, IdUnidad:1})
+        productos.push({codigo: "999992", descripcion: "domicilio", price: cc.shipping, stock:1, idoferta:0, cantidad: 1, descuento:0, IdUnidad:1})
 
         setLoading(true)
 
@@ -174,16 +180,16 @@ const Checkout = ({navigation}) => {
                 a: metodoPago, 
                 b: metodoPago == "PSE" ? "OnLine" : "ContraEntrega", 
                 c: direccion, 
-                d: location.id, 
+                d: cc.id, 
                 e: 0, 
-                f: location.id, 
-                g: location.name, 
+                f: cc.id, 
+                g: cc.city,
                 h: cart.total - orderDiscount, 
-                s: location.homeService, 
+                s: cc.shipping, 
                 v: orderDiscount, 
                 i: "APP" + Platform.OS === 'ios' ? "ios" : "android", 
                 time: getCurrentTime(), 
-                obs: "APP NUEVA EN CONSTANTE ACTUALIZACION" 
+                obs: especificaciones 
             },
             {j:{Aplica: false}},
             {k: {nit: user.nit, nombres: user.nombres, email: user.email, auth_token: user.token}},
@@ -191,10 +197,10 @@ const Checkout = ({navigation}) => {
             {m:productos}
         )
 
-        
-          
+
         if(!res.error)
         {
+
             if(res.message.codeError) Alert.alert('Atención', res.message.message)
             else {
                 if(res.message.order == 0) {
@@ -215,31 +221,22 @@ const Checkout = ({navigation}) => {
                         ciudad: res.message.city,
                         direccion: direccion,
                         cedula: user.nit,
-                        total: cart.total - orderDiscount + location.homeService,
+                        total: cart.total - orderDiscount + cc.shipping,
                         numero_orden: res.message.order
                     }
-                    
-                    setPsebody(encodeURI(`Acid=83791&Accountpassword=1234&FNm=${d.nombre}&LNm=${d.apellido}&Mob=${d.celular}&Pho=${d.telefono}&Ema=${d.email}&CI=${d.ciudad}&Add=${d.direccion}&IdNumber=${d.cedula}&IdType=CC&MOpt1=001&Total=${d.total}&Tax=0&BDev=0&Ref1=${d.numero_orden}&Desc=0&MOpt3=https://www.droguerialaeconomia.com/economia/pagos/Online&ReturnURL=https://www.droguerialaeconomia.com/economia/pagos/returndle&CancelURL=https://www.droguerialaeconomia.com/economia/pagos/returndle&EnablePSE=true&EnableCard=false&EnableCash=false&EnableEfecty=false&Version=2`))
+
+                    //const body = encodeURI(`Acid=83791&Accountpassword=1234&FNm=${d.nombre}&LNm=${d.apellido}&Mob=${d.celular}&Pho=${d.telefono}&Ema=${d.email}&CI=${d.ciudad}&Add=${d.direccion}&IdNumber=${d.cedula}&IdType=CC&MOpt1=001&Total=${d.total}&Tax=0&BDev=0&Ref1=${d.numero_orden}&Desc=0&MOpt3=https://www.droguerialaeconomia.com/economia/pagos/Online&ReturnURL=https://www.droguerialaeconomia.com/economia/pagos/returndle&CancelURL=https://www.droguerialaeconomia.com/economia/pagos/returndle&EnablePSE=true&EnableCard=false&EnableCash=false&EnableEfecty=false&Version=2`)
+                    setPsebody(res.message.form)
                     setModalPSEVisible(true)
 
                 } else finishCompra()
             }
             
-        } else {
-            Alert.alert('Atención', 'No se pudo generar el pedido, por favor vuelve a intentarlo.', [
-                {text: 'Reintentar', onPress: async () => await checkoutOrder()},
-                {text: 'Cancelar',}
-            ])
-        }
-        
-    
-       
-   
+        } else Alert.alert('Atención', 'No se pudo generar el pedido, por favor vuelve a intentarlo.')
 
     }
 
     const finishCompra = async () => {
-
         setLoading(false)
         const pedido = await API.POST.getPedido(currentPedido)
 
@@ -247,159 +244,181 @@ const Checkout = ({navigation}) => {
 
         if(!pedido.error) _state.pedidoexito = pedido.message.data[0].Estado
         
-        // Clear the shop cart
-        //SetProductsInShopCart([]);
-
-        console.log(_state)
         clearCartItems()
         Alert.alert('Atención', 'Su pedido fue creado satisfactoriamente.')
         navigation.navigate("Home")
     }
 
+
+    const cancelPSE = async () => {
+
+        Alert.alert(
+            "La Economía",
+            "¿Esta seguro que desea abandonar el pago por PSE?\n\nSu pedido será cancelado.",
+            [
+              {
+                text: "ABANDONAR",
+                onPress: () => {setModalPSEVisible(false); finishCompra()},
+                style: "cancel"
+              },
+              { text: "CONTINUAR PAGO", onPress: () => {} }
+            ]
+          );
+
+        
+    }
+
+    
+
     return (
         <SafeAreaView style={styles.container} forceInset={{top: "never", bottom: "never"}}>
-            <StatusBar backgroundColor="#fff" barStyle="dark-content" />
-             
+            
+            <View style={{backgroundColor: "white", padding:5, borderBottomWidth: 2, borderBottomColor: "#eee"}} >
+                <Title title="Checkout" onBack={() => navigation.goBack()} />
+            </View>
+
             <FlatList 
                 showsVerticalScrollIndicator={false}
                 keyExtractor={(item, index) => `item_${index}`}
                 data={[0]}
+                contentContainerStyle={{paddingBottom:40}}
                 renderItem={() => {
                     return (
                         <View>
                         
-                            <View style={styles.headerContainer}>
-                                <Text style={styles.headerText}>INGRESA TU CUPÓN DE DESCUENTO</Text>
-                            </View>
-
-                            <View style={styles.couponSectionContainer}>
-                                <TextInput 
-                                    style={styles.couponInputText}
-                                    placeholder='INGR3S4TUCUP0N'
-                                    placeholderTextColor={"#A5A5A5"}
-                                    autoCapitalize='characters'
-                                    maxLength={15}
-                                    editable={false}
-                                    value={couponName}
-                                />
-                                {loading &&
-                                    <View style={[styles.botonVerde, {minWidth: 108}]} >
-                                        <ActivityIndicator color="white" size={22} />
-                                    </View> 
-                                }
-                                {!loading &&
-                                    <TouchableOpacity activeOpacity={0.8} style={styles.botonVerde} onPress={() => checkCoupon(couponName)}>
-                                        <Text style={styles.botonVerdeText}>APLICAR</Text>
-                                    </TouchableOpacity>
-                                }
-
-                    
-                            </View>
-
-                            {couponToOrder.IdCupon && couponToOrder.Aplica && 
-                                <View style={{margin:15, marginHorizontal:40, backgroundColor:"#70AA70", padding: 10, borderColor:"#fff", borderWidth: 1, borderRadius: 10}}><Text style={{fontSize: 18, textAlign:"center", color: "white", fontFamily:"RobotoB"}}>¡Cupón aplicado con éxito!</Text></View>
-                            }
-
-                            {couponToOrder.IdCupon && !couponToOrder.Aplica && 
-                                <View style={{margin:15, marginHorizontal:40, backgroundColor:"#AA7070", padding: 10, borderColor:"#fff", borderWidth: 1, borderRadius: 10}}><Text style={{fontSize: 18, textAlign:"center", color: "white", fontFamily:"RobotoB"}}>¡Cupón inválido!</Text></View>
-                            }
-
-
-                            <TouchableOpacity onPress={() => setCuponesVisible(true)} style={{padding:10, borderWidth: 1, borderColor: "#ccc", marginHorizontal:30, marginTop:10, borderRadius:8, flexDirection:"row", justifyContent:"center", alignItems:"center"}}>
-                                <Text style={{textAlign:"center", color: "#666"}}>Ver Cupones Disponibles </Text>
-                                <Image source={down} tintColor="#999" resizeMode='contain' style={{width:12, height:12, marginLeft:5}} />
-                            </TouchableOpacity>
-
-                            <View style={{height:30}}></View>
-                        
-                            <View style={styles.headerContainer}>
-                                <Text style={styles.headerText}>FORMA DE PAGO</Text>
-                            </View>
-                            <Text style={styles.label}>Pago Contraentrega</Text>
-                            <View style={{flexDirection:"row", justifyContent:"center"}}>
-                                <Pagos items={pagosContraentrega} onChange={id => setSelectedMethod(id)} selected={selectedMethod} />
-                            </View>
-                            <View style={{height:10}}></View>
-                            <Text style={styles.label}>Pago Online</Text>
-                            <View style={{flexDirection:"row", justifyContent:"center"}}>
-                                <Pagos items={pagosOnline} onChange={id => setSelectedMethod(id)} selected={selectedMethod} />
-                            </View>
-                            
-                            <View style={{height:30}}></View>
-
-
-                            <View style={styles.headerContainer}>
-                                <Text style={styles.headerText}>DIRECCION DE ENTREGA</Text>
-                            </View>
+                            <View style={[_styles.seccion, {marginTop:0, borderTopWidth: 0}]}>
+                                <Text style={styles.h4}>Ingresa tu cupón de descuento</Text>
+                                <View style={[styles.row, {marginTop: 15}]}>
                                     
-                            <Direcciones 
-                                addresses = {addresses} 
-                                selectedAddress = {selectedAddress} 
-                                onSelectAddress = {index => setSelectedAddress(index)} 
-                                onPressAddNewAddress = {() => setModalAddressVisible(true)} 
-                            />
+                                    <TextInput 
+                                        style={_styles.couponInput}
+                                        placeholder='INGR3S4TUCUP0N'
+                                        placeholderTextColor={"#A5A5A5"}
+                                        autoCapitalize='characters'
+                                        maxLength={15}
+                                        onChange={text => setCouponName(text)}
+                                        value={couponName}
+                                    />
+                                    {loading &&
+                                        <View style={[_styles.botonVerde, {minWidth: 108}]} >
+                                            <ActivityIndicator color="white" size={22} />
+                                        </View> 
+                                    }
+                                    {!loading &&
+                                        <TouchableOpacity activeOpacity={0.8} style={_styles.botonVerde} onPress={() => checkCoupon(couponName)}>
+                                            <Text style={_styles.botonVerdeText}>APLICAR</Text>
+                                        </TouchableOpacity>
+                                    }
+                                </View>
 
-                            <View style={{height:30}}></View>
+                                {couponToOrder.IdCupon && couponToOrder.Aplica && 
+                                    <View style={_styles.cuponResult}>
+                                        <Text style={{fontSize: 15, textAlign:"center", color: "#0a8623", fontFamily:"Tommy"}}><FontAwesome name="check" size={17} color="#0a8623" /> Cupón aplicado con éxito</Text>
+                                    </View>
+                                }
 
-                            <View style={styles.headerContainer}>
-                                <Text style={styles.headerText}>RESUMEN DE ORDEN</Text>
-                            </View>
-
-                            <View style={styles.rowCenter}>
-                                <View style={{width: 240}}>
-                                    <View style={styles.row}>
-                                        <Text style={styles.label2}>Subtotal</Text>
-                                        <Text style={styles.label3}>{f(cart.total)}</Text>
+                                {couponToOrder.IdCupon && !couponToOrder.Aplica && 
+                                    <View style={[_styles.cuponResult, {borderColor:"#aa232366"}]}>
+                                        <Text style={{fontSize: 15, textAlign:"center", color: "#aa2323", fontFamily:"Tommy"}}><FontAwesome name="times" size={17} color="#aa2323" /> Cupón inválido</Text>
                                     </View>
-                                    <View style={styles.row}>
-                                        <Text style={styles.label2}>Descuentos</Text>
-                                        <Text style={[styles.label3, (orderDiscount > 0 ? {color: "#FF2F6C"} : {})]}>{orderDiscount > 0 ? "-" : ""}{f(orderDiscount)}</Text>
-                                    </View>
-                                    <View style={styles.row}>
-                                        <Text style={styles.label2}>Domicilio</Text>
-                                        <Text style={styles.label3}>{f(location.homeService)}</Text>
-                                    </View>
-                                    <View style={styles.row}>
-                                        <Text style={[styles.label2, {fontSize: 18}]}>Total a Pagar</Text>
-                                        <Text style={[styles.label3, {color: "#222", fontSize: 20}]}>{f(cart.total - orderDiscount + parseInt(location.homeService))}</Text>
-                                    </View>
+                                }
+                                <View style={[styles.rowCenter, {marginTop:11}]}>
+                                    <TouchableOpacity style={_styles.button} onPress={() => setCuponesVisible(true)}>
+                                        <Text style={_styles.buttonText}>Cupones Disponibles</Text>
+                                    </TouchableOpacity>
                                 </View>
                             </View>
 
-                   
+                            <View style={_styles.seccion}>
+                                <Text style={styles.h4}>Forma de pago</Text>
+                                <View style={{height:10}}></View>
+                                <Text style={_styles.label}>Pago Contraentrega</Text>
+                                <View style={styles.rowCenter}>
+                                    <Pagos items={pagosContraentrega} onChange={id => setSelectedMethod(id)} selected={selectedMethod} />
+                                </View>
+                                <View style={{height:10}}></View>
+                                <Text style={_styles.label}>Pago Online</Text>
+                                <View style={styles.rowCenter}>
+                                    <Pagos items={pagosOnline} onChange={id => setSelectedMethod(id)} selected={selectedMethod} />
+                                </View>
+                            </View>
+                            
+                            <View style={_styles.seccion}>
+                                <Text style={styles.h4}>Dirección de entrega</Text>
+                                <View style={{height:10}}></View>
+                                <Text style={{fontFamily:"TommyL", fontSize:15, color:"#666"}}>Tus productos fueron calculados con base en la ciudad de <Text style={{fontFamily:"TommyR", color: "#333"}}>{CapitalizeWord(params.cc.city)}</Text></Text>
+                                <View style={[styles.rowCenter, {marginTop:11}]}>
+                                    <TouchableOpacity style={_styles.button} onPress={() => {setMustShowLocation(true); navigation.navigate("Home")}}>
+                                        <Text style={_styles.buttonText}>Cambiar Ubicación</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <Direcciones 
+                                    loading = {loadingAddress}
+                                    addresses = {addresses} 
+                                    selected = {selectedAddress} 
+                                    onSelect = {index => setSelectedAddress(index)} 
+                                    onPressNewAddress = {() => setModalAddressVisible(true)} 
+                                />
+                            </View>
 
-                            <View style={{marginTop:40, marginHorizontal:30}}>
+                            <View style={_styles.seccion}>
+                                <Text style={styles.h4}>Notas adicionales al pedido</Text>
+                                <TextArea value={especificaciones} onChange={text => setEspecificaciones(text)} placeholder="Ejemplo: Dejar con el portero del edificio." />
+                            </View>
+  
+                            
+
+                            <View style={_styles.seccion}>
+                                <Text style={styles.h4}>Resumen de la orden</Text>
+                                <View style={{height:10}}></View>
+                                <View style={styles.rowCenter}>
+                                    <View style={{width: 240}}>
+                                        <View style={styles.row}>
+                                            <Text style={_styles.label2}>Subtotal</Text>
+                                            <Text style={_styles.label3}>{f(cart.total)}</Text>
+                                        </View>
+                                        <View style={styles.row}>
+                                            <Text style={_styles.label2}>Descuentos</Text>
+                                            <Text style={[_styles.label3, (orderDiscount > 0 ? {color: "#FF2F6C"} : {})]}>{orderDiscount > 0 ? "-" : ""}{f(orderDiscount)}</Text>
+                                        </View>
+                                        <View style={styles.row}>
+                                            <Text style={_styles.label2}>Domicilio</Text>
+                                            <Text style={_styles.label3}>{f(params.cc.shipping)}</Text>
+                                        </View>
+                                        <View style={styles.row}>
+                                            <Text style={[_styles.label2]}>Total a Pagar</Text>
+                                            <Text style={[_styles.label3, {color: "#222", fontSize: 23, color:"#1B42CB"}]}>{f(cart.total - orderDiscount + parseInt(params.cc.shipping))}</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+                            
+                            <View style={{marginTop:10, marginHorizontal:30}}>
                                 <Button title="CONFIRMAR PEDIDO" styleMode="blue" loading={loading}  onPress={() => checkoutOrder()} />
                             </View>
-                            <View style={{marginTop:25, marginHorizontal:30}}>
-                                <Button title="REGRESAR" styleMode="outlineBlue" onPress={() => navigation.navigate("Cart")} />
-                            </View>
-
-                            <View style={{height:70}}></View>
 
                         </View>
                     )
                 }}
             />  
             <Cupones visible={cuponesVisible} onclose={() => setCuponesVisible(false)} />
-            <BottomMenu navigation={navigation} />
 
-            <AddAddress visible={modalAddressVisible} onCancel={() => setModalAddressVisible(false)} onSuccess={() => getAddresses()}/>
+            <AddAddress visible={modalAddressVisible} onCancel={() => setModalAddressVisible(false)} onSuccess={() => {setModalAddressVisible(false), getAddresses()}}/>
             <Modal
                 animationType = 'fade'
-                transparent = {true}
+                transparent = {false}
                 visible = {modalPSEVisible}
                 onRequestClose = {() => {}}
             >
-                <View style={{height:50, backgroundColor: "white"}}></View>
+                <Title title="Pago en línea" onCancel={() => cancelPSE()} />
                 <AutoHeightWebView
                     style={{ width: Dimensions.get('window').width}}
-                    source={{uri:'https://ecommerce.pagosinteligentes.com/checkout/Gateway.aspx', method: 'POST', body: psebody }}
+                    source={{uri:psebody}}
                     scalesPageToFit={true}
                     viewportContent={'width=device-width, user-scalable=no'}
                     onLoadProgress={({ nativeEvent }) => {
                         if(nativeEvent.progress == 1) {
-                            if(nativeEvent.url == "https://www.droguerialaeconomia.com/") {
+                            if(nativeEvent.url.toString().indexOf("droguerialaeconomia") > -1) {
                                 setModalPSEVisible(false)
                                 finishCompra()
                             }
@@ -418,74 +437,40 @@ const Checkout = ({navigation}) => {
 
 export default Checkout
 
-const styles = StyleSheet.create({
+const _styles = StyleSheet.create({
 
-    container: { flex: 1, backgroundColor:"white", paddingBottom: 15, paddingTop: Platform.OS == "ios" ? StatusBar.currentHeight + 40 + 10 : 15 },
-    rowCenter: {flexDirection:"row", alignItems:"center", justifyContent: "center"},
-    row: {width:"100%", flexDirection:"row", alignItems:"center", justifyContent: "space-between"},
 
-    purchaseDetailItemTotalText: { fontSize: 16, color: "#657272", fontFamily: "Roboto" },
-    purchaseDetailItemTotalValueText: { fontSize: 16, color: "#FF2F6C", fontFamily: "RobotoB"},
+    cuponResult: {marginTop:15, marginHorizontal:20, padding: 7, borderColor:"#0a862366", borderTopWidth: 1, borderBottomWidth: 1},
+    button: {marginVertical: 8, backgroundColor:"#f2f2f2", borderRadius:20},
+    buttonText: {fontSize: 16, color: "#464646", fontFamily: "Tommy", textAlign:"center",  paddingVertical:7, paddingHorizontal:20},
 
-    sectionWrapper: {flex: 1, paddingBottom: 60},
+    botonVerde: {backgroundColor: "#FF2F6C", justifyContent:"center", paddingHorizontal:25, height:40, borderBottomRightRadius: 25, borderTopRightRadius: 25},
+    botonVerdeText: {color: "#fff", fontFamily: "Tommy"},
 
-    cartSectionWrapper: { opacity: 0, height: 0, flexDirection: 'row', alignItems: 'center', borderBottomWidth: 2, borderBottomColor:"#f2f2f2" },
-    sectionContainer: { width: '25%', alignItems: 'center', },
-    imageSectionWrapper: { width: '100%', flexDirection: 'row', alignItems: 'center' },
-    imageSeparator: { width: '25%', height: 1, },
-    imageSectionContainer: { width: '50%', borderWidth: 1, borderColor: "#FF2F6C", alignItems: 'center', justifyContent: 'center', },
-    imageSection: { width: 20, height: 20, tintColor: "#FF2F6C", },
-    sectionText: { fontSize: 15, color: "#FF2F6C", marginVertical: 10, fontFamily: "Roboto" },
-    emptyCartContainer: {width: '100%', padding: 15},
-    emptyCartText: {fontSize: 16, color: "#A5A5A5", fontFamily: "Roboto"},
-
-    productItemContainer: {padding: 15, backgroundColor: "#FFFFFF", borderColor: "#F4F4F4", borderTopWidth: 1.5,},
-
-    footerContainer: { position: 'absolute', width: '100%', flexDirection: 'row', justifyContent: 'space-between', backgroundColor: "#F4F4F4", paddingVertical: 10, bottom: 0 },
-    footerBackButton: { width: '45%', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 15, borderWidth: 2, borderColor: "#1B42CB", borderRadius: 6, marginHorizontal: "2.5%" },
-    footerBackButtonImage: { width: 10, height: 10, tintColor: "#A5A5A5" },
-    footerBackButtonText: { fontSize: 13, color: "#1B42CB", marginLeft: 10, fontFamily: "RobotoB"},
-    footerAddToCartButton: { width: '45%', alignItems: 'center', padding: 15, backgroundColor: "#1B42CB", borderRadius: 6,  marginHorizontal: "2.5%" },
-    footerAddToCartButtonText: { fontSize: 13, color: "#FF2F6C", fontFamily: "RobotoB" },
-
-    botonVerde: {backgroundColor: "#0a8623", justifyContent:"center", paddingHorizontal:25, paddingVertical:10, borderBottomRightRadius: 10, borderTopRightRadius: 10},
-    botonVerdeText: {color: "#fff", fontWeight: "bold"},
-    headerContainer: {paddingVertical: 5, backgroundColor: "#cdd2e1", borderRadius:10, margin: 15, paddingHorizontal:15},
-    headerText: { fontSize: 15, color: "#657272", fontFamily: "RobotoB" },
-
-    couponSectionContainer: { paddingVertical: 10, paddingHorizontal: 40, flexDirection: "row"},
-
-    couponInputText: {
+  
+    seccion: {padding:20, paddingTop:10, marginTop:10, borderTopWidth: 1, borderTopColor: "#eee"},
+    couponInput: {
         flex:1, 
         fontSize: 15,
         color: "#333",
-        padding: 8, 
+        padding: 5, 
+        paddingLeft:10,
         alignItems: 'center', 
         borderWidth: 0.5, 
-        borderColor: "#B2C3C3", 
+        borderColor: "#bbb", 
         backgroundColor: "#F2F2F2", 
-        borderTopLeftRadius:10, 
-        borderBottomLeftRadius:10, 
-        fontFamily: "Roboto" 
+        borderTopLeftRadius:25, 
+        borderBottomLeftRadius:25, 
+        fontFamily: "Roboto",
+        height:40
     },
 
-    loadingCouponContainer: {position: 'absolute', width: '100%', height: '100%', backgroundColor: "rgba(0,0,0,0.5)",},
-
-    purchaseDetailContainer: { paddingVertical: 10, paddingHorizontal:40 },
-    purchaseDetailItemText: { fontSize: 16, color: "#A5A5A5", fontFamily: "Roboto" },
-    purchaseDetailItemTotalText: { fontSize: 16, color: "#657272", fontFamily: "Roboto" },
-    purchaseDetailItemTotalValueText: { fontSize: 16, color: "#1B42CB", fontFamily: "RobotoB" },
-
-    customerSupportContainer: {padding: 25, alignItems: 'center', backgroundColor: "#F2F2F2", borderRadius: 10, marginTop: 15},
-    customerSupportText: {fontSize: 16, color: "#657272", textAlign: 'center'},
-    customerSupportScheduleText: {fontSize: 16, color: "#657272", textAlign: 'center', fontFamily: "RobotoB"},
-
     label: {
-        fontFamily: "Roboto",
+        fontFamily: "TommyR",
         textAlign: "center",
         color:"#555"
     },
-    label2: {fontSize:15, color: "#666", fontFamily: "Roboto", paddingVertical:5, textAlign: "right", width:120, marginLeft: -7},
-    label3: {fontSize:15, color: "#555", fontFamily: "RobotoB", paddingVertical:5, textAlign: "left", width:120, paddingLeft: 7},
+    label2: {fontSize:15, color: "#666", fontFamily: "TommyR", paddingVertical:5, textAlign: "right", width:120, marginLeft: -7},
+    label3: {fontSize:15, color: "#333", fontFamily: "Tommy", paddingVertical:5, textAlign: "left", width:120, paddingLeft: 7},
 
 })

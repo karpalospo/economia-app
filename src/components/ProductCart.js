@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Image, Alert } from 'react-native';
 import { UtilitiesContext } from '../context/UtilitiesContext'
 
-import { f, CapitalizeWords, IsExcludedCategory } from "../utils/helper";
+import { f, CapitalizeWords, IsExcludedCategory } from '../global/functions';
 import Cantidad from "./Cantidad";
 
 

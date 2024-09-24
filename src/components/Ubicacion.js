@@ -9,8 +9,9 @@ import { styles } from '../global/styles';
 const Ubicacion = ({visible, onSelectLocation, onCancel}) => {
 
     const [selectedItem, setSelectedItem] = useState(0);
-
     const {  params } = useContext(UtilitiesContext)
+
+
 
     return (
         <Modal
@@ -23,7 +24,7 @@ const Ubicacion = ({visible, onSelectLocation, onCancel}) => {
                 
                 <View style={_styles.locationContainer}>
 
-                    <Title title="Ubicacion" onCancel={onCancel} />
+                    <Title title="Ubicación" onCancel={onCancel} />
                     <View style={{height:30}} />
                     <Text style={_styles.label}>¿Desde cuál ciudad quieres comprar?</Text>
                     <View style={{width:"80%", backgroundColor:"#f6f6f6", height:40, marginTop:10, borderRadius:25, borderWidth:1, borderColor: "#aaa"}}>

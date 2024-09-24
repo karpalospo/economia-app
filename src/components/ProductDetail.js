@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useContext} from 'react';
 import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Image, Modal, Alert, Dimensions, ActivityIndicator } from "react-native";
 
-import { f, CapitalizeWord, IsExcludedCategory } from "../utils/helper";
+import { f, CapitalizeWord, IsExcludedCategory } from '../global/functions';
 import { HELPER_API, URL, } from "../services/services";
 
 
@@ -9,6 +9,7 @@ import Carousel from "./Carousel";
 import Cantidad from "./Cantidad";
 import Button from "./Button";
 import { getProducts } from "../services/products";
+
 
 import { UtilitiesContext } from '../context/UtilitiesContext'
 
@@ -28,6 +29,7 @@ export const ProductDetail = ({
 
     const [loading, setLoading] = useState(true)
     const [loadingGallery, setLoadingGallery] = useState(false)
+    const [currentImage, setCurrentImage] = useState(null)
 
     const [product, setProduct] = useState({})
     const [gallery, setGallery] = useState([])
@@ -38,6 +40,7 @@ export const ProductDetail = ({
     useEffect(() => {
 
         (async function() {
+            setProduct({})
             if(!productID) return
             await retrieveProduct();
         })()
@@ -46,6 +49,7 @@ export const ProductDetail = ({
 
     const addCart = (item) => {
         setCartItem(item.id, 1, 0, item)
+        
     }
 
     const onChange = (value, item) => {
@@ -115,11 +119,16 @@ export const ProductDetail = ({
         return _array
     }
 
+    const onTapImage = (data) => {
+        setCurrentImage(data.source.uri)
+    }
+
     let hasDiscount = false
     let itemCart = false
     if(cart.items) itemCart = cart.items[productID]
         
     if(product && (product.discount > 0 && !IsExcludedCategory(product.subgrupo36))) hasDiscount = true
+
 
     return (
         <Modal
@@ -136,29 +145,38 @@ export const ProductDetail = ({
                         </TouchableOpacity>
                     </View>
 
+                    {currentImage && 
+                    <View style={{flex:1, position:"relative"}}>
+                        <TouchableOpacity onPress={() => setCurrentImage(null)} style={{position:"absolute", zIndex:100, width:110, height:40, backgroundColor:"rgba(0,0,0,0.7)", borderRadius:25, top:0, left:0}}>
+                            <Text style={{textAlign: "center", color:"white", lineHeight:40}}>Cerrar Imagen</Text>
+                        </TouchableOpacity>
+                        <Image source={{uri: currentImage}}  style={{width:"100%", height:"100%"}} resizeMode="contain" />
+                    </View>}
+                    {!currentImage && 
                     <ScrollView>
                         {loading && 
                         <View>
                             <Text style={{textAlign: "center"}}>Leyendo información del producto...</Text>
                         </View>
                         }
-                        {!loading && product &&
+                        {!loading && Object.keys(product).length > 0 &&
                         <View style={styles.scrollContainer}>
                             
                             {hasDiscount && 
-                            <View style={styles.vidaSanaIndicatorContainer}>
+                            <View style={styles.descuentoCont}>
                                 <Image source={oferta} style={styles.discountImg} resizeMode="contain"/>
                                 <Text style={styles.descuento}>{`${product.discount}%`}</Text>
                             </View>
                             }
                             
-                            {loadingGallery && <View style={{height:200, flexDirection:"row", alignItems:"center"}} ><ActivityIndicator color={"#1B42CB"} /></View>}
+                            {loadingGallery && <View style={{height:220, flexDirection:"row", alignItems:"center"}} ><ActivityIndicator color={"#1B42CB"} /></View>}
                             {!loadingGallery &&
                             <Carousel  
                                 autoscroll={true}
                                 imageStyle = {{height: 220}}
                                 images2={loading ? [] : gallery}
-                                imageResizeMode={'contain'} 
+                                imageResizeMode={'contain'}
+                                onTapImage={onTapImage}
                             />
                             }
 
@@ -166,13 +184,14 @@ export const ProductDetail = ({
                             <View style={styles.productNameContainer}>
                                 <Text style={styles.nombre}>{CapitalizeWord(product.name)}</Text>
                             </View>
+                            <Text style={[styles.proveedor, {color:"#666"}]}>CÓDIGO: {product.id}</Text>
                             
                             <View style={[styles.rowCenter, {marginVertical:15}]}>
                                 {hasDiscount && <Text style={styles.precioAntes}>{f(product.antes)}</Text>}
                                 <Text style={[styles.precio, {color: hasDiscount ? "#FF2F6C" : "#333"}]}>{f(product.price)}</Text>
                             </View>
 
-                            {product.unit != '' && <Text style={styles.unidad}>{product.unit}</Text>}
+                            {product.unit && <Text style={styles.unidad}>{product.unit}</Text>}
 
                             <View style={{height: 20}} />
                             <View style={styles.addToCartContainer}>
@@ -180,7 +199,7 @@ export const ProductDetail = ({
                                 {!itemCart && <Button title="AGREGAR AL CARRITO" onPress={() => addCart(product)} />}
                             </View>
                             
-                            {product.additionalDescription != '' &&
+                            {product.additionalDescription &&
                             <View style={{width:"100%", paddingHorizontal:20}}>
                                 <View style={styles.productDescriptionTitleContainer}>
                                     <Text style={styles.productDescriptionTitleText}>INFORMACIÓN ADICIONAL</Text>
@@ -196,6 +215,7 @@ export const ProductDetail = ({
                     }
 
                     </ScrollView>
+                    }
 
                 </View>
 
@@ -278,7 +298,7 @@ const styles = StyleSheet.create({
         fontFamily: "RobotoB"
     },
 
-    vidaSanaIndicatorContainer: { position: 'absolute', top: 0, left: 30, width: 50, height: 50, justifyContent: 'center', zIndex: 100},
+    descuentoCont: { position: 'absolute', top: 0, left: 30, width: 50, height: 50, justifyContent: 'center', zIndex: 100},
     discountImg: {width:55, height: 55, position:"absolute", zIndex:-1, top:3, right:3},
     descuento: {
         textAlign: "center", 

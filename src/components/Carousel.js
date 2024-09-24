@@ -8,8 +8,6 @@ const { width } = Dimensions.get('window');
 
 export default class Carousel extends React.Component {
 
-
-
 	static defaultProps = {
 		images: [],
 		dotsColor: "#1B42CB",
@@ -41,7 +39,7 @@ export default class Carousel extends React.Component {
 	}
 
 	componentDidMount() {
-		if (this.props.autoscroll && this.props.images.length > 1) {
+		if (this.props.autoscroll && (this.props.images.length > 1 || (this.props.images2 && this.props.images2.length > 1))) {
 			this.nextImage = 0
 			this.autoScrollInterval = setInterval(() => {
 				this.autoScroll()
@@ -56,7 +54,7 @@ export default class Carousel extends React.Component {
 				findNodeHandle(this.scrollViewRef), (x, y) => {
 					this.scrollViewRef.scrollTo({ x: x, y: 0, animated: true })
 					this.nextImage++
-					if (this.nextImage == this.props.images.length) {
+					if (this.nextImage == (this.props.images.length || (this.props.images2 && this.props.images2.length))) {
 						this.nextImage = 0
 					}
 				})
@@ -64,8 +62,10 @@ export default class Carousel extends React.Component {
 	}
 
 	getImageIndex(index) {
-		let ret = { id: 0, data: {} }
-		this.props.images.forEach(item => {
+		let ret = { id: 0, data: {} }, images = this.props.images;
+
+		if(this.props.images2 != undefined) images = this.props.images2
+		images.forEach(item => {
 			if (item.id == index) ret = item
 		})
 		return ret
@@ -135,10 +135,10 @@ export default class Carousel extends React.Component {
 						))}
 					</ScrollView>
 
-					{(_images.length > 1 && this.props.showIndicator) &&
+					{(_images.length > 1) &&
 						<View style={{ alignItems: 'center', width: '100%', height: 10, justifyContent: 'center', marginTop: 5 }}>
 							<View style={{ flexDirection: 'row', justifyContent: 'center', width: '30%', alignItems: 'center' }}>
-								{images.map((_, i) => { // the _ just means we won't use that parameter
+								{_images.map((item, i) => { // the _ just means we won't use that parameter
 									const opacity = this.position.interpolate({
 										inputRange: [i - 1, i, i + 1], // each dot will need to have an opacity of 1 when position is equal to their index (i)
 										outputRange: [0.1, 1, 0.1], // when position is not i, the opacity of the dot will animate to 0.3

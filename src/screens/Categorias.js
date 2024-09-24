@@ -1,119 +1,198 @@
-import React, {useState, useContext, useEffect } from "react";
-import { View, StyleSheet, FlatList, Text, StatusBar} from "react-native";
-import { CategoryHorizontalCard } from "../components/CategoryHorizontalCard";
-import { HeaderWithTitleAndBackButton } from "../components/HeaderWithTitleAndBackButton";
-import { URL, PANEL_API } from "../services/services";
-import { FormatBannerItem } from "../utils/formatter";
-import Carousel from "../components/Carousel";
+import React, { useState, useEffect, useRef, useContext }  from "react";
+import { View, Text, TouchableOpacity, FlatList, SafeAreaView, Dimensions  } from "react-native";
+
+import { UtilitiesContext } from '../context/UtilitiesContext'
+
+import Header from "../components/Header";
+import { styles } from '../global/styles';
 import BottomMenu from "../components/BottomMenu";
-
-const Categorias = ({navigation, route}) => {
-
-    const { id, categories, title } = route.params;
-
-    const [idCat, setIDCat] = useState(id);
-    const [loadingGallery, setLoadingGallery] = useState(false);
-    const [todasLasCategorias, setTodasLasCategorias] = useState(false);
-    const [groupGallery, setGroupGallery] = useState([]);
-
-
-    const retrieveMedia = async (media, group = '') => 
-    {
-        let gallery = []
-
-        const res = await PANEL_API.GET.RetrieveBanners(media, false, '', group)
-
-        if(!res.error)
-        {
-            for (let i = 0; i < res.message.data.length; i++) {
-                const element = res.message.data[i];
-                gallery.push(FormatBannerItem(element));
-            }
-        }
-
-        return gallery
-    }
-
-    useEffect(() => {
-        (async function () {
-            if(id == 0) setTodasLasCategorias(true)
-            if(id > 0) {
-                setLoadingGallery(true)
-                const groupGallery = await retrieveMedia(8, id)
-                setLoadingGallery(false)
-                setGroupGallery(groupGallery)
-            }
-        })
-
-    }, [idCat])
-
-    onTapCategory = (title, id, subCategories) =>
-    {
-        navigation.navigate('CategoriaView', {title, id, subCategories})
-    }
+import { ScrollView } from "react-native-gesture-handler";
+import { Ionicons } from '@expo/vector-icons'; 
+import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
+import { LinearGradient } from 'expo-linear-gradient';
+import Title from "../components/Title";
+import { Arrayfy, sortByKey } from "../global/functions";
+import ProductList from "../components/ProductList";
+import { getProducts } from "../services/products";
 
 
-    return (
-        <View style={styles.container}>
-
-            <View style={styles.groupSectionContainer}>
-
-                <HeaderWithTitleAndBackButton title='Categorias' subtitle={title} onPress={() => navigation.goBack()} />
-
-            </View>
-
-            {todasLasCategorias && <Text>Todas las categorias</Text>}
-
-            <View style={styles.categoriesContainer}>
-
-                {groupGallery.length > 0 &&
-                    <View style={styles.groupGalleryContainer}>
-                        <Carousel 
-                            imageContainerStyle={styles.carouselImageContainer}
-                            images={groupGallery}
-                            imageResizeMode={'cover'} 
-                            dotsColor="#1B42CB"
-                            onTapImage={() => {}}
-                            autoscroll={true}
-                            showIndicator={false}
-                        />
-                    </View>
-                }
-
-                <FlatList
-                    style={{marginBottom:80}}
-                    keyExtractor={(item, index) => `category_${index}`}
-                    data={categories}
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{paddingBottom: 80}}
-                    renderItem={({ item, index }) => { 
-                        return (
-                            <CategoryHorizontalCard title={item.name} image={{uri: `${URL.S3_GROUPS}${idCat}/${item.id}.png`}} onPress={() => onTapCategory(item.name, item.id, item.subCategories)} />
-                        )
-                    }}
-                />
+const window = Dimensions.get("window");
+const PAGE_WIDTH = window.width;
 
 
-            </View>
-
-            <View style={{height:60}} />
-
-            <BottomMenu navigation={navigation} />
-
-        </View>
-    )
-    
+const sorts = {
+    "01001": 20,
+    "01002": 2,
+    "01004": 2,
+    "01005": 2,
+    "01007": 2,
+    "02001": 12,
+    "02002": 13,
+    "02003": 14,
+    "02004": 12,
+    "02005": 11,
+    "02006": 15,
+    "02007": 11,
+    "02008": 19,
+    "03001": 15,
+    "03002": 10,
+    "03003": 18,
+    "03004": 17,
+    "03005": 16,
+    "03006": 9,
+    "03007": 8,
+    "03008": 2,
+    "04001": 7,
+    "04002": 6,
+    "07001": 5,
+    "07003": 2,
+    "07006": 2,
+    "07007": 2,
 }
 
-export default Categorias
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#F4F4F4", paddingTop: Platform.OS == "ios" ? StatusBar.currentHeight + 40 + 10 : 0 },
+const Profile = ({navigation}) => {
 
-    groupSectionContainer: { width: '100%', marginTop: 0 },
+    const [categorias, setCategorias] = useState([])
+    const [subcategorias, setSubcategorias] = useState([])
+    const [productos, setProductos] = useState([])
+    const [productosLoading, setProductosLoading] = useState(false)
+    const [currentCat, setCurrentCat] = useState(null)
+    const [currentSub, setCurrentSub] = useState(null)
+    
 
-    categoriesContainer: {width: '100%', paddingHorizontal: 15, },
+    const { params, user } = useContext(UtilitiesContext)
 
-    groupGalleryContainer: {width: '100%', padding: 15,},
-    carouselImageContainer: {borderRadius: 10, overflow: 'hidden'},
-})
+    useEffect(() => {
+        let cats = []
+        if(params && params.cc && params.cc.categorias) {
+            Object.keys(params.cc.categorias.categorias).forEach(key => {
+                const cat = {...params.cc.categorias.categorias[key], sort: sorts[key] || 1}
+                cats.push(cat)
+            })
+            setCategorias(sortByKey(cats, "sort", "desc"))
+        }
+    }, [params])
+
+
+    const baseOptions =  {
+        vertical: false,
+        width: PAGE_WIDTH,
+        height: PAGE_WIDTH / 2,
+    }
+
+    const selectCat = (cat) => {
+        let subs = Arrayfy(cat.subs)
+        setCurrentCat(cat)
+        setProductos([])
+        setSubcategorias(subs)
+        selectSub(subs[0], cat)
+    }
+
+    const selectSub = async (sub, cat) => {
+        if(!cat) cat = currentCat
+        setCurrentSub(sub)
+        setProductos([])
+        setProductosLoading(true)
+        console.log(`[cats]${cat.id}/${sub.id}`)
+        const res = await getProducts(`[cats]${cat.id}/${sub.id}`, params.cc.id, user)
+        setProductosLoading(false)
+        setProductos(res.products)
+    }
+
+    return(
+        <SafeAreaView style={styles.container} forceInset={{top: "never", bottom: "never"}}>
+            
+            {/*<Carousel
+                {...baseOptions}
+                loop={true}
+                ref={ref}
+                style={{ width: '100%' }}
+                autoPlay={true}
+                autoPlayInterval={4000}
+                data={[0,1,2]}
+                onSnapToItem={(index) => console.log('current index:', index)}
+                renderItem={({ item, index }) => <View style={{width:"100%", height:"100%", backgroundColor:"yellow"}}><Text>{item}</Text></View>}
+            /> */}
+
+            <LinearGradient
+                colors={['#fff', '#eee']}
+                start={[1, 0]}
+                end={[1, 1]}
+                location={[0, 0.5]}
+                style={{position:"absolute", top:20, width:"100%", height:"100%", zIndex:-1}}
+            />
+            <Header navigation={navigation} mode="short" />
+
+            {/*<FlatList 
+                keyExtractor={(item, index) => `key${item.id}`}
+                data={[{id:0}]}
+                contentContainerStyle={{paddingBottom:90}}
+                renderItem={({ item, index }) => */}
+                    <View style={{flex:1}}>
+                        {currentCat && 
+                            <View style={{flex:1}}>
+                                <View style={{paddingHorizontal:10, paddingVertical:8}}>
+                                    <Title title={currentCat.title} onBack={() => setCurrentCat(null)} />
+                                </View>
+                                <View style={{paddingBottom:10}}>
+                                    <FlatList 
+                                        keyExtractor={(item, index) => `subs_${item.id}`}
+                                        data={subcategorias}
+                                        horizontal={true}
+                                        showsHorizontalScrollIndicator={false}
+                                        contentContainerStyle={{paddingLeft:10}}
+                                        renderItem={({ item, index }) => {
+                                            const isCurrent = currentSub && item.id == currentSub.id
+                                            return (
+                                                <TouchableOpacity activeOpacity={0.7}  style={[_styles.subcat, isCurrent ? {backgroundColor:"#1B42CB", borderWidth: 0} : {}]} onPress={() => selectSub(item)}>
+                                                    <Text style={[_styles.subText, isCurrent ? {color:"white"} : {} ]}>{item.title}</Text>
+                                                </TouchableOpacity>
+                                            )
+                                        }}
+                                    />
+                                </View>
+                                <View style={{flex:1}}>
+                                    <ProductList items={productos} loading={productosLoading} paddingBottom={90} />
+                                </View>
+                            </View>
+                        }
+                        {currentCat == null && 
+                            <FlatList 
+                                keyExtractor={(item, index) => item.id}
+                                data={categorias}
+                                numColumns={2}
+                                contentContainerStyle={{padding:10, paddingBottom:80}}
+                                renderItem={({ item, index }) => {
+                                    return (
+                                        <TouchableOpacity activeOpacity={0.7} style={_styles.itemCont} onPress={() => selectCat(item)}>
+                                            <View style={_styles.item}>
+                                                <Text style={_styles.itemText}>{item.title}</Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                    )
+                                }}
+                            />
+                        }
+                    </View>
+            {/*}        
+                }
+            />*/}
+
+            <BottomMenu navigation={navigation} />
+        </SafeAreaView>
+    )
+
+}
+
+export default Profile 
+
+const _styles = {
+    
+    itemCont: {flex:0.5, padding: 10,},
+    item: {backgroundColor: "#ffffff", borderWidth:0.5, borderColor:"#ccc", justifyContent: "flex-end", borderRadius: 10, padding: 10, minHeight:60},
+    itemText: {fontFamily:"Tommy"},
+    
+    subcat: {backgroundColor: "#ffffff", borderWidth:0.5, borderColor:"#ccc", marginHorizontal:6, justifyContent: "flex-end", borderRadius: 10, padding: 10},
+    subText: {fontFamily:"TommyR"},
+}

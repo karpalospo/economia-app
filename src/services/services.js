@@ -284,9 +284,10 @@ export const API = {
             return await fetchAsync(`${URL.server2}/signin`, HTTP_REQUEST_METHOD.POST, { body: FormUrlEncoded({data}), headers: HEADER_URL_ENCODE});
         },
 
-        async PerformRetrieveProductsFromCodeList (codigos, ciudad, { page = 1, items = 1000, convenio = "" } = {})
+        async getProductosPorCodigo (codigos, ciudad, { page = 1, items = 1000, convenio = "" } = {})
         {
-            return await fetchAsync(`${URL.HOST}/economia/api/referencias/codigos/`, HTTP_REQUEST_METHOD.POST, {body: JSON.stringify({codigos, ciudad, convenio, pagina: page, items}), headers: HEADER_JSON})
+            //return await fetchAsync(`${URL.HOST}/economia/api/referencias/codigos/`, HTTP_REQUEST_METHOD.POST, {body: JSON.stringify({codigos, ciudad, convenio, pagina: page, items}), headers: HEADER_JSON})
+            return await fetchAsync(`${URL.HOST}/api/referencias/itemssingle`, HTTP_REQUEST_METHOD.POST, {body: JSON.stringify({codigos, ciudad, convenio, pagina: page, items}), headers: HEADER_JSON})
         },
 
         async SignUp (fields)
@@ -324,10 +325,9 @@ export const API = {
         },
 
 
-        async PerformRetrieveAddressList(nit, nombres, email, auth_token) {
+        async getAddresses(nit, nombres, email, auth_token) {
             return await fetchAsync(`${URL.HOST}/economia/site/users/getMyDirecciones/`, HTTP_REQUEST_METHOD.POST, {body: FormUrlEncoded({nit, email, nombres, auth_token}), headers: HEADER_URL_ENCODE});
         },
-
 
         async PerformEditProfile(document, name, email, token, {password = '', newName, newDocument, dateOfBirth, phone, cellphone})
         {
@@ -367,7 +367,7 @@ export const API = {
 
         },
 
-        async PerformSaveAddress(direccion, nombre_direccion, nit, nombres, email, auth_token, ciudad) {
+        async saveAddress(direccion, nombre_direccion, nit, nombres, email, auth_token, ciudad) {
 
             const fields = {
                 userInfo: {nit,email,nombres,auth_token},

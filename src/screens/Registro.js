@@ -3,7 +3,6 @@ import { View, Image, ScrollView, Text, TextInput, TouchableOpacity, Alert, Link
 import { API } from '../services/services';
 import  Button  from "../components/Button";
 import  Title  from "../components/Title";
-import { ValidateEmail } from '../utils/helper';
 import { styles } from '../global/styles';
 import { UtilitiesContext } from '../context/UtilitiesContext'
 import BouncyCheckbox from "react-native-bouncy-checkbox";
@@ -12,6 +11,12 @@ const arrow_up = require('../../assets/icons/dropup_arrow.png')
 const arrow_down = require('../../assets/icons/dropdown_arrow.png')
 const eye = require("../../assets/icons/eye.png")
 const eyeno = require("../../assets/icons/eye-no.png")
+
+const ValidateEmail = (email) =>
+{
+    let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+}
 
 const Registro = ({navigation}) => {
 
@@ -47,7 +52,7 @@ const Registro = ({navigation}) => {
     const signUp = async () => {
      
         let msg = '';
-console.log(terms)
+
         if (terms) {
 
             const checkFields = checkEmptyOrInvalidFields();
@@ -200,7 +205,7 @@ console.log(terms)
                     <View style={_styles.termsContainer}>
 
                         <BouncyCheckbox
-                            size={30}
+                            size={26}
                             fillColor="#333"
                             unfillColor="white"
                             iconStyle={{ borderColor: "#999", borderRadius: 8 }}
