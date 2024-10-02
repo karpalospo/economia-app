@@ -9,7 +9,8 @@ import { UtilitiesContext } from '../context/UtilitiesContext';
 import { styles } from '../global/styles';
 import Cupones from "../components/Cupones";
 
-const cupon = require("../../assets/icons/cupon.png")
+const cupon = require("../../assets/icons/tag.png")
+const cart_img = require("../../assets/icons/cart.png")
 const logo = require('../../assets/la_economia_h.png')
 const icon = require('../../assets/icon.png')
 
@@ -32,7 +33,7 @@ const Header = ({navigation, searchFunction, mode="large"}) => {
 
     const Cart = 
         <TouchableOpacity style={_styles.button} onPress={() => navigation.navigate("Cart")}>
-            <Feather name="shopping-cart" size={24} color="black" />
+            <Image source={cart_img} style={{width:25, height:25}} resizeMode='contain' />
             {cart.itemsCount > 0 &&
             <View style={_styles.badgeWrapper}>
                 <View style={_styles.badgeCont}>
@@ -43,7 +44,7 @@ const Header = ({navigation, searchFunction, mode="large"}) => {
 
     const Cupon =
         <TouchableOpacity onPress={() => setCuponesVisible(true)} style={_styles.button}>
-            <Image source={cupon} style={{width:20, height:22}} resizeMode='contain' />
+            <Image source={cupon} style={{width:25, height:25}} resizeMode='contain' />
         </TouchableOpacity>
      
     const BarCode = 
@@ -136,23 +137,21 @@ const _styles = {
     },
 
 
-    badgeWrapper: {position: 'absolute', top: 0, right: 0, justifyContent: 'flex-start'},
+    badgeWrapper: {position: 'absolute', top: 2, right: 2, justifyContent: 'flex-start'},
     badgeCont: {width: 18, height: 18, borderRadius: 10, backgroundColor: "#FF2F6C", alignItems: 'center', justifyContent: 'center'},
     badgeText: {fontSize: 11, color: "#FFFFFF", textAlign: 'center', fontFamily: "Tommy"},
 
     inputCont: {
         flex:1, 
         alignItems: 'center', 
-        borderRadius: 25, 
+        borderRadius: 5, 
         flexDirection: 'row', 
         justifyContent: 'space-between', 
         height:36, 
         paddingVertical: 3, 
         paddingHorizontal:10, 
         paddingLeft:15,
-        backgroundColor: "#f0f0f0", 
-        borderWidth: 0.5, 
-        borderColor:"#ccc", 
+        backgroundColor: "#F2F4F7", 
         marginVertical: 4
     },
     input: {color: "#333", fontSize: 15, fontFamily: "Roboto", flex: 1},

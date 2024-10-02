@@ -1,6 +1,10 @@
 import { API } from "./services";
 import { sortByKey } from "../global/functions";
 import { URL } from "../services/services";
+import axios from 'axios';
+
+
+const ITEMS_PER_PAGE = 1000;
 
 const FormatProduct = (product) => {
 
@@ -11,7 +15,7 @@ const FormatProduct = (product) => {
         antes: product.Antes,
         price: product.Ahora, 
         discount: product.Porcentaje,
-        idoferta: product.idoferta,
+        idoferta: product.idOferta,
         name: product.descripcion, 
         unit: product.valor_contenido ? product.valor_contenido : '',
         pricePerUnit: product.precioMedida ? product.precioMedida : 0,
@@ -36,28 +40,50 @@ export const getUpdatedCartItems = async (items, location) => {
     return products
 }
 
-export const getProducts = async (str, location, user, data) => {
+export const getProducts = async (codigos, location, user, param) => {
     
-    let products = [];
+    let products = [],
+        sendData = {marca: "ECO", canal: "APP", ciudad: location, convenio: user.convenio || "", pagina: 1, items: ITEMS_PER_PAGE}
 
-    if(str == "subcategoria") {
-        str = `[cats]${data.substring(0, 5)}/${data}`
-    }
-    
-    let res = await API.POST.search(str, location, user)
-   
-    if(!res.error) {
-        const res2 = await API.POST.getProductosPorCodigo(res.message.products.map(item => item.id), location);
-        console.log(res2)
-        let items = sortByKey([...res2.message.data], "Porcentaje", "desc")
-        for (let i = 0; i < items.length; i++) {
-            const element = items[i]
-            if(!element.codigo) continue
-            if(element.codigo == "209159") console.log(element)
-            products.push(FormatProduct(element));
+    if(codigos == "ofertas") {
+        const {data} = await axios.post(`${URL.HOST}/api/ofertas/`, sendData);
+        if(data.success === true) {
+            data.data.forEach(item => products.push(FormatProduct(item)));
         }
-        res.message.products = []
-        return {...res.message, products}
+    } else if(codigos == "cats") {
+        console.log("empiezo")
+        const {data} = await axios.post(`${URL.HOST}/api/referencias/itemscatsubsingle`, {...sendData, catsubcat: param.sub})
+        console.log("termino")
+        if(data.success === true) {
+            data.data.forEach(item => products.push(FormatProduct(item)));
+        }
+    } else if(codigos == "search") {
+        const {data} = await axios.post(`${URL.HOST}/search`, {search: param.search, location});
+
+        let response = await axios.post(`${URL.HOST}/api/referencias/itemssingle`, {...sendData, codigos: data.products.map(item => item.id)});
+        if(response.data.success === true) {
+            response.data.data.forEach(item => products.push(FormatProduct(item)));
+        }
+    } else {
+        const {data} = await axios.post(`${URL.HOST}/api/referencias/itemssingle`, {...sendData, codigos});
+        if(data.success === true) {
+            data.data.forEach(item => products.push(FormatProduct(item)));
+        }
     }
-    return {products}
+
+    products = products.filter(item => item.stock > 0)
+    return products;
+
+    //     const res2 = await API.POST.getProductosPorCodigo(res.message.products.map(item => item.id), location);
+    //     let items = sortByKey([...res2.message.data], "Porcentaje", "desc")
+    //     for (let i = 0; i < items.length; i++) {
+    //         const element = items[i]
+    //         if(!element.codigo) continue
+    //         if(element.codigo == "209159") console.log(element)
+    //         products.push(FormatProduct(element));
+    //     }
+    //     res.message.products = []
+    //     return {...res.message, products}
+
+    // return {products}
 }

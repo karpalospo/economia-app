@@ -133,7 +133,7 @@ const Cart = ({navigation}) => {
                             </View>
                         </View>
                         <View style={{flex:0.4}}>
-                            <Button title="PAGAR" onPress={() => shopNow()} />
+                            <Button title="Comprar Ahora" onPress={() => shopNow()} />
                         </View>
                     </View>
 

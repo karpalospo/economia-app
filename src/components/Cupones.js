@@ -1,7 +1,6 @@
 import React, {useState, useContext} from "react";
 import { View, Text, Modal, FlatList } from "react-native";
 
-
 import { format_date, f, Arrayfy } from '../global/functions';
 import Button from "../components/Button";
 import Title from "../components/Title";
@@ -12,6 +11,7 @@ const Cupones = ({visible, onclose}) => {
 
     const { cupones, setCupon } = useContext(UtilitiesContext)
 
+    if(!cupones) cupones = [];
     const setCuponLocal = (item) => {
         setCupon({IdCupon: false, NombreCupon: item.nombrecupon, Aplica: false, ...item})
         onclose()
@@ -33,11 +33,11 @@ const Cupones = ({visible, onclose}) => {
                             return (
                                 <View style={_styles.couponItem}>
                                     <View style={_styles.dashed}>
-                                        <Text style={_styles.couponText}>{item.nombrecupon}</Text>
-                                        <Text style={_styles.couponPrice}>{f(item.valorcupon)}</Text>
+                                        <Text style={_styles.couponText}>{item.NombreCupon}</Text>
+                                        <Text style={_styles.couponPrice}>{f(item.ValorCupon)}</Text>
                                 
-                                        <Text style={{paddingVertical:10, color:"white"}}>{'\u2022'} {f(item.valorcupon)} de descuento para compras mínimas de {f(item.vlrminimo)}. Válido hasta {format_date("compact2+time", item.hasta)}</Text>
-                                        <Text style={{color:"white", paddingBottom:10}}>{'\u2022'} Cupón válido para redimir máximo {item.maximaventacliente} veces por usuario en un mismo día.</Text>
+                                        <Text style={{paddingVertical:10, color:"white"}}>{'\u2022'} {f(item.ValorCupon)} de descuento para compras mínimas de {f(item.VlrMinimo)}. Válido hasta {format_date("compact2+time", item.hasta)}</Text>
+                                        <Text style={{color:"white", paddingBottom:10}}>{'\u2022'} Cupón válido para redimir máximo {item.MaximaVentaCliente} veces por usuario en un mismo día.</Text>
                                         <Text style={{color:"white"}}>{'\u2022'} Aplican condiciones y restricciones</Text>
                                         <View style={{height:20}} />
                                         <Button onPress={() => setCuponLocal(item)} title="UTILIZAR ESTE CUPÓN" styleMode="pink" buttonStyle={{paddingVertical:10}} />

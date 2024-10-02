@@ -12,6 +12,7 @@ const Provider = ({ children }) => {
 
     const [user, setUserState] = useState({})
     const [cupones, setCuponesState] = useState({})
+    const [ofertas, setOfertasState] = useState([])
     const [cart, setCart] = useState({})
     const [cupon, setCuponState] = useState({})
     const [params, setParams] = useState({
@@ -36,10 +37,6 @@ const Provider = ({ children }) => {
                     itemsCount: 0
                 })
             }
-
-        
-
-
             setLoading(false)
 
         } catch (error) {
@@ -57,10 +54,14 @@ const Provider = ({ children }) => {
         AsyncStorage.setItem('user',JSON.stringify(user));  
     }
 
-    
+    const setOfertas = (ofertas) => {
+        setOfertasState(ofertas)
+    }
+
     const setCupons = (cupons) => {
         setCuponesState(cupons)
     }
+
     const setCupon = (cupon) => {
         setCuponState(cupon)
     }
@@ -165,6 +166,8 @@ const Provider = ({ children }) => {
         user,
         setUser,
         cart,
+        ofertas,
+        setOfertas,
         cupones,
         setCupons,
         cupon,

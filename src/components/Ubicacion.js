@@ -9,9 +9,7 @@ import { styles } from '../global/styles';
 const Ubicacion = ({visible, onSelectLocation, onCancel}) => {
 
     const [selectedItem, setSelectedItem] = useState(0);
-    const {  params } = useContext(UtilitiesContext)
-
-
+    const {params} = useContext(UtilitiesContext)
 
     return (
         <Modal

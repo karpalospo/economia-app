@@ -48,31 +48,29 @@ const ProductList = ({items = [], loading = false, paddingBottom = 0}) => {
                 data={items}
                 getItemCount={data => data.length}
                 getItem={getItem}
-                contentContainerStyle={{paddingHorizontal:10, paddingBottom}}
-
+                contentContainerStyle={{paddingHorizontal:20, paddingBottom}}
                 removeClippedSubviews={true}
                 initialNumToRender={10}
                 maxToRenderPerBatch={10}
                 updateCellsBatchingPeriod={100}
                 windowSize={10}
-                
                 renderItem={({ item, index }) => 
-                    
-                <View key={index} style={{flexDirection:"row"}}>
-                    {item.map((product, index2) => {
-                        let itemCart = false
-                        if(cart.items) itemCart = cart.items[product.id]
-                        return (
-                        <Product
-                            key={`item${index}${index2}`}
-                            item={product} 
-                            itemCart={itemCart}
-                            addCart={addCart} 
-                            onChange={onChange} 
-                            onTap={() => {setProductID(product.id); setShowDetail(true)}}
-                        />)
-                    })}
-                </View>
+                    <View key={index} style={{flexDirection:"row"}}>
+                        {item.map((product, index2) => {
+                            let itemCart = false
+                            if(cart.items) itemCart = cart.items[product.id]
+                            return (
+                                <Product
+                                    key={`item${index}${index2}`}
+                                    item={product} 
+                                    itemCart={itemCart}
+                                    addCart={addCart} 
+                                    onChange={onChange} 
+                                    onTap={() => {setProductID(product.id); setShowDetail(true)}}
+                                />
+                            )
+                        })}
+                    </View>
                 }
             />
             <ProductDetail visible={showDetail} productID={productID} onClose={() => setShowDetail(false)} addCart={addCart} />

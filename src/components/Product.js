@@ -5,7 +5,6 @@ import { f, CapitalizeWord, CapitalizeWords, IsExcludedCategory } from '../globa
 import Button from "../components/Button";
 
 
-const oferta = require("../../assets/icons/oferta2.png")
 
 const Product = ({mykey, item, itemCart, onTap, onChange, addCart}) => {
 
@@ -16,18 +15,17 @@ const Product = ({mykey, item, itemCart, onTap, onChange, addCart}) => {
                             
             <TouchableOpacity activeOpacity={0.85} style={styles.imageCont} onPress={onTap}>
                 <Image source={item.image} style={styles.mainImage} resizeMode='contain' onError={(error) => {}} />
-                {hasDiscount &&
-                    <View style={styles.descCont}>
-                        <Image source={oferta} style={styles.discountImg} resizeMode="contain"/>
-                        <Text style={styles.descuento}>{`${item.discount}%`}</Text>
-                    </View>
-                }
-            
+
                 <View style={styles.detalle}>
                     <Text style={styles.nombre}>{CapitalizeWord(item.name)}</Text>
-                    <View style={styles.precioCont}>
-                        {hasDiscount && <Text style={styles.precioAntes}>{f(item.antes)}</Text>}
-                        <Text style={[styles.precio, hasDiscount ? {color: "#FF2F6C"} : {}]}>{f(item.price)}</Text>
+                    <View>
+                        <View>{hasDiscount && <Text style={styles.precioAntes}>{f(item.antes)}</Text>}</View>
+                        <View><Text style={styles.precio}>{f(item.price)}</Text></View>
+                        {hasDiscount &&
+                            <View style={styles.descCont}>
+                                <Text style={styles.descuento}>{`${item.discount}%`}</Text>
+                            </View>
+                        }
                     </View>
                     <Text style={styles.unidad}>{CapitalizeWords(item.unit)}</Text>
                 </View>
@@ -35,7 +33,7 @@ const Product = ({mykey, item, itemCart, onTap, onChange, addCart}) => {
 
             <View style={styles.agregarCont}>
                 {itemCart && itemCart._quanty > 0 && <Cantidad value={itemCart._quanty} item={item} onChange={onChange} />}
-                {!itemCart && <Button title="AGREGAR" onPress={() => addCart(item)} /> }
+                {!itemCart && <Button title="Agregar" onPress={() => addCart(item)} image={true} /> }
             </View>
 
         </View>
@@ -48,45 +46,37 @@ const styles = {
 
     container: {
         flex:0.5, 
-        margin: 1,
+        margin: 10,
         paddingTop:10,
-        paddingBottom:18,
+        paddingBottom:63,
         backgroundColor: "#FFFFFF",
-        borderRadius: 4
+        borderRadius: 15
     },
 
     imageCont: {width: '100%', overflow: 'hidden', justifyContent: 'center', alignItems: 'center', borderTopLeftRadius: 10, borderTopRightRadius: 10, paddingTop: 10, overflow: 'hidden'},
     mainImage: {width: '100%', height: 100, position:"relative", zIndex:-2},
 
     detalle: {paddingHorizontal: 10, width: '100%'},
-    precioCont: {flexDirection: 'row', alignItems: 'center', justifyContent: 'center', height: 30},
     precio: {fontSize: 20, color: "#333", fontFamily: "Tommy"},
-    precioAntes: {fontSize: 14, textDecorationLine: 'line-through', color: "#aaa", fontFamily: "Tommy", paddingRight:14},
+    precioAntes: {fontSize: 14, textDecorationLine: 'line-through', color: "#6E7191"},
 
-    nombre: {fontSize: 15, color: "#444", marginVertical: 8, fontFamily: "TommyR", textAlign:"center", minHeight:60},
-    unidad: {fontSize: 12, color: "#666", fontFamily: "TommyR", textAlign:"center", height:20, marginTop:5, lineHeight:20},
+    nombre: {fontSize: 15, color: "#333", marginVertical: 8, fontFamily: "TommyR", textAlign:"left", minHeight:60},
+    unidad: {fontSize: 12, color: "#666", fontFamily: "TommyR", textAlign:"left", height:20, marginTop:5, lineHeight:20},
 
     agregarCont: {
+        position: "absolute",
+        left: 0,
+        bottom: 13,
         width: '100%', 
         alignItems: 'center', 
-        paddingHorizontal: 20, 
-        paddingVertical:5, 
-        marginTop:10
+        paddingHorizontal: 15, 
+        marginTop:10,
     },
-
-    descCont: { position: 'absolute', top: 0, left: 10, width: 38, width: 38, justifyContent: 'center'},
-    discountImg: {width:38, height: 38, position:"absolute", zIndex:-1, top:3, right:3},
+    descCont: {backgroundColor: "#039855", borderRadius: 5, paddingHorizontal: 10, paddingVertical: 4, marginTop: 7, alignSelf: 'flex-start'},
     descuento: {
         fontSize: 15, 
         color:"white", 
-        fontFamily: "RobotoB", 
-        width:38, 
-        height: 38, 
-        position:"absolute", 
-        textAlign:"center", 
-        zIndex:1, 
-        top: Platform == "ios" ? 14 : 10, 
-        right:3
+        fontFamily: "Tommy", 
     },
 
 }

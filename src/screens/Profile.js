@@ -18,7 +18,7 @@ const Profile = ({navigation}) => {
         return (
             <TouchableOpacity style={_styles.optionButton} onPress={onPress}>
                 <Text style={_styles.label2}>{title}</Text>
-                <Ionicons name="ios-chevron-forward" size={24} color="black" />
+                <Ionicons name="chevron-forward" size={20} color="#666" />
             </TouchableOpacity>
         )
     }

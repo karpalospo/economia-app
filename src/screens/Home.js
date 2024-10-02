@@ -1,18 +1,20 @@
 import React, {useState, useContext, useEffect } from "react";
-import { View, StyleSheet, FlatList, TouchableOpacity, Text } from "react-native";
+import { View, StyleSheet, FlatList } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 
 import Header from "../components/Header";
 import Carousel from "../components/Carousel";
 import  Bola  from "../components/Bola";
 import BottomMenu from "../components/BottomMenu";
-import ProductList from "../components/ProductList";
+import OfertasHome from "../components/OfertasHome";
 
-import { API } from "../services/services";
+import { API, URL } from "../services/services";
 import { getProducts } from "../services/products";
 import { UtilitiesContext } from '../context/UtilitiesContext'
 import * as Updates from 'expo-updates';
 import { styles } from '../global/styles';
+
+import axios from 'axios';
 
 const dias = [
 
@@ -30,53 +32,80 @@ const Home = ({navigation}) => {
 
     const [banners, setBanners] = useState([]);
     const [inferior, setInferior] = useState([]);
-    const [mejoresOfertasList, setMejoresOfertasList] = useState([]);
-    const [mejoresLoading, setMejoresLoading] = useState(false);
     const [showLocation, setShowLocation] = useState(false);
 
-    const { location, user, setCupons, params, setParams } = useContext(UtilitiesContext)
+    const { location, user, params, setParams, setOfertas, cupones, setCupons } = useContext(UtilitiesContext)
          
     useEffect(() => {
         (async function () {
+
+          
+            let centroscostos = [], cc;
+
+            setOfertas([])
+
+            try {
+                let response = await axios.post(`${URL.HOST}/api/ciudades`, {marca: "ECO"}); 
+                if(response.data.success === true) {
+                    response.data.data.forEach(item => {
+                        centroscostos.push({id: item.Ciudad, city: item.Descripcion})
+                        if(item.Ciudad == location.id) {
+                            cc = {id: item.Ciudad, city: item.Descripcion, shipping: item.valor_domicilio}
+                        }
+                    });
+                }
+                setParams({centroscostos, cc})
+    
+            } catch(err){console.log(err)}
            
-            setMejoresLoading(true)
-            setMejoresOfertasList([])
+            if(location.id == undefined) {  
+                return setShowLocation(true)
+            }
 
-            let res = await API.POST.init({location: location.id, page: "home"}), d;
 
-            if(!res.error) {
-                d = res.message
-                setCupons(d.coupons)
+            try {
+                let {data} = await axios.post(`${URL.HOST}/init`, {location: location.id, page: "home", user})
+                d = data
+                  
+                //setCupons(d.coupons)
                 setBanners(d.banners.superior)
                 setInferior(d.banners.inferior)
                 setParams({
-                    dia: d.day,
-                    centroscostos: d.centroscostos,
-                    cc: d.current_centrocosto,
-                    date: d.date,
-                    noPromoCats: d.noPromoCats,
-                    noPromoSubs: d.noPromoSubs,
-                    proveedores: d.proveedores,
-                    user: d.user,
-                    pestrella: d.pestrella
+                    centroscostos,
+                    cc,
+                    dia: data.day,
+                    date: data.date,
+                    noPromoCats: data.noPromoCats,
+                    noPromoSubs: data.noPromoSubs,
+                    proveedores: data.proveedores,
+                    user: data.user,
+                    pestrella: data.pestrella
                 })
-                if(location.id == undefined) {  
-                    return setShowLocation(true)
+
+                const products = await getProducts("ofertas", location.id, user)
+                setOfertas(products.slice(0, 8))
+
+                if(!user.nit || cupones.length > 0) return;
+                let response = await axios.post(`${URL.HOST}/api/ofertas/cuponesdisponibles`, {marca: "ECO", idusuario: user.nit, canal: "APP"});
+                
+                let _cupones = [];
+                if(response.data.Success === true) {
+                    response.data.data.forEach(item => {
+                        if(item.visible) _cupones.push(item)
+                    });
                 }
-            }
-  
-            const products = await getProducts("[sales]", location.id, user)
-            setMejoresOfertasList(products.products.slice(0, 8))
-            setMejoresLoading(false)
+                setCupons(_cupones)
+ 
+            } catch(err) {console.log(err)}
          
         })()
     }, [location])
 
-    useFocusEffect(
-        React.useCallback(() => {
-            //checkUpdates()
-        }, [])
-    );
+    // useFocusEffect(
+    //     React.useCallback(() => {
+    //         //checkUpdates()
+    //     }, [])
+    // );
 
     // const checkUpdates = async () => {
     //     Updates.checkForUpdateAsync().then((res) => {
@@ -86,15 +115,15 @@ const Home = ({navigation}) => {
     //     }).catch((e) => console.log('Error de update', e))
     // }
 
-    const getNewVersion = async () => {
-        Updates.fetchUpdateAsync().then((res) => {
-            if (res.isNew === true) {
-                Updates.reloadAsync()
-                .then((res) => console.log(res))
-                .catch((e) => console.log('Ups!', 'Ha ocurrido un error'))
-            }
-        }).catch((e) => {})
-    }
+    // const getNewVersion = async () => {
+    //     Updates.fetchUpdateAsync().then((res) => {
+    //         if (res.isNew === true) {
+    //             Updates.reloadAsync()
+    //             .then((res) => console.log(res))
+    //             .catch((e) => console.log('Ups!', 'Ha ocurrido un error'))
+    //         }
+    //     }).catch((e) => {})
+    // }
 
 
     const onTapImage = (image) => {
@@ -111,9 +140,9 @@ const Home = ({navigation}) => {
         if(item.id == "estrella") navigation.navigate("Busqueda", {search: "[banner]" + params.pestrella})
         if(item.id == "lunes") navigation.navigate("Busqueda", {search: "[banner]391"})
         if(item.id == "martes") navigation.navigate("Busqueda", {search: "[banner]393"})
-        if(item.id == "miercoles") navigation.navigate("Busqueda", {search: "[cats]medicamentos/medicamentos"})
-        if(item.id == "jueves") navigation.navigate("Busqueda", {search: "[cats]medicamentos/medicamentos"})
-        if(item.id == "viernes") navigation.navigate("Busqueda", {search: "[banner]388"})
+        if(item.id == "miercoles") navigation.navigate("Busqueda", {search: "[banner]518"})
+        if(item.id == "jueves") navigation.navigate("Busqueda", {search: "[sales]"})
+        if(item.id == "viernes") navigation.navigate("Busqueda", {search: "[banner]540"})
 
     }
 
@@ -133,8 +162,6 @@ const Home = ({navigation}) => {
                         <Carousel autoscroll={true} images={banners} onTapImage={onTapImage} />
 
                         <View style={_styles.diasCont}>
-                            {!mejoresLoading &&
-
                             <View style={{flexDirection:"row", justifyContent:"space-between"}}>
                                 {dias.map((item, index) => {
                                     let dia = params.dia
@@ -152,25 +179,9 @@ const Home = ({navigation}) => {
                                     )
                                 })}
                             </View>
-                            }
                         </View>
-                        
         
-                            <View>
-
-                                <View style={{flexDirection:"row", justifyContent:"flex-start", paddingBottom:8}}>
-                                    <Text style={styles.h2}>Ofertas Especiales</Text>
-                                </View>
-
-                                <ProductList items={mejoresOfertasList} loading={mejoresLoading} />
-
-                                <View style={{flexDirection:"row", justifyContent:"center"}}>
-                                    <TouchableOpacity onPress={() => navigation.navigate('Busqueda', {search: "[sales]", location: location.id})} style={_styles.ofertasCont}>
-                                        <Text style={_styles.ofertas}>VER TODAS LAS OFERTAS</Text>
-                                    </TouchableOpacity>
-                                </View>
-
-                            </View>
+                        <OfertasHome navigation={navigation} />  
                             
                         <Carousel images={inferior} onTapImage={onTapImage} />
 
@@ -202,29 +213,6 @@ const _styles = StyleSheet.create({
         backgroundColor: 'white', 
         minHeight: 100,
         borderRadius: 15
-    }, 
-
-    ofertasCont: {
-        marginVertical: 20, 
-        paddingHorizontal: 30, 
-        borderRadius:7, 
-        backgroundColor: "#ff2c6e",
-        elevation: 6,
-        shadowColor: "rgba(0,0,0,0.3)", 
-        shadowOffset: {width: 1, heigth: 2}, 
-        shadowOpacity: 2, 
-        shadowRadius: 8
-    },
-
-    ofertas: {
-        textAlign:"center", 
-        padding:12, 
-        fontSize: 14, 
-        color: "white", 
-        fontFamily: "RobotoB",
-    },
-
-
-
+    }
 
 })

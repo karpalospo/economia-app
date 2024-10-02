@@ -4,7 +4,7 @@ import { View, StyleSheet, Text, TouchableOpacity, FlatList, TextInput, Platform
 import AutoHeightWebView from 'react-native-autoheight-webview'
 import { UtilitiesContext } from '../context/UtilitiesContext'
 
-import { API } from '../services/services';
+import { API, URL } from '../services/services';
 import { Direcciones } from "../components/Direcciones";
 import  Pagos  from "../components/Pagos";
 import  Button  from "../components/Button";
@@ -15,6 +15,7 @@ import { styles } from '../global/styles';
 import { Arrayfy, f, CapitalizeWord } from "../global/functions";
 import { FontAwesome  } from '@expo/vector-icons'; 
 import TextArea from "../components/TextArea";
+import axios from 'axios';
 
 const MIN_COMPRA_BOGOTA = 30000 
 const MIN_COMPRA_CIUDADES = 15000 
@@ -37,7 +38,7 @@ const Checkout = ({navigation}) => {
     const [orderDiscount, setOrderDiscount] = useState(0)
     const [couponName, setCouponName] = useState("")
     const [especificaciones, setEspecificaciones] = useState("")
-    const [couponToOrder, setCouponToOrder] = useState({Aplica:false})
+    const [couponToOrder, setCouponToOrder] = useState({aplica:false})
     const [selectedMethod, setSelectedMethod] = useState(-1)
     const [selectedAddress, setSelectedAddress] = useState(-1)
     const [cuponesVisible, setCuponesVisible] = useState(false);
@@ -59,7 +60,7 @@ const Checkout = ({navigation}) => {
     }, [cupon])
 
     useEffect(() => {
-        setCouponToOrder({Aplica:false})
+        setCouponToOrder({aplica:false})
         setOrderDiscount(0)
     }, [couponName])
 
@@ -90,50 +91,56 @@ const Checkout = ({navigation}) => {
         if(user.token != '')
         {
             setLoading(true)
-            let res = await API.GET.RetrieveWhetherCouponIsValidOrNot(coupon, user.nit, user.name, user.email, user.token);
-            setLoading(false)
-            let cupon = {};
-            let error = res.error;
-
-            function setError(msg) {
-                error = true;
-                Alert.alert('Error de Cupón', msg)
-            }
-     
-            if(!error) {   
-                cupon = res.message.data[0]
-                if((cupon.Condicion.toString() == "0") && (cart.total < cupon.VlrMinimo)) setError(`El cupón ${cupon.NombreCupon} solo es válido para compras mínimas de ${f(cupon.VlrMinimo)}.`)
-                else if(cupon.Condicion.toString() != "0") {
+            try {
+                console.log(coupon)
+                const {data} = await axios.post(`${URL.HOST}/economia/api/cupon/${coupon}`, {user: {
+                    nit: user.nit, 
+                    email: user.email, 
+                    nombres: user.name, 
+                    token: user.token
+                }, marca: "ECO", canal: "WEB"})
+        
+                console.log("res1", data)
+                let cupon = {};
+                let error = data.Success == false;
+    
+                function setError(msg) {
+                    error = true;
+                    Alert.alert('Error de Cupón', msg)
+                }
          
-                    setLoading(true)
-                    res = await API.POST.PerformValidateTypeOfCoupon(cupon.Condicion, Arrayfy(cart.items).map(product => ({codigo: product.id, price: product.price, cantidad: product._quanty})))
-                    setLoading(false)
-
-                    if(res.error) setError(res.message.Message)
-                    else if(res.message.ValorProductos < cupon.VlrMinimo) setError(`El cupón ${cupon.NombreCupon} solo es válido para compras mínimas de ${f(cupon.VlrMinimo)}. Aplica para ${cupon.Descripcion}.`)
-                    
-                } else Alert.alert(`El cupón ${cupon.NombreCupon} por valor de ${cupon.ValorCupon} ha sido aplicado al pedido`)
-            } else {
-                Alert.alert("Redimir Cupón", "Este cupón no es válido")
+                if(!error) {   
+                    cupon = data.data[0]
+                    if((cupon.Condicion.toString() == "0") && (cart.total < cupon.VlrMinimo)) setError(`El cupón ${cupon.NombreCupon} solo es válido para compras mínimas de ${f(cupon.VlrMinimo)}.`)
+                    else if(cupon.Condicion.toString() != "0") {
+             
+                        let res = await axios.post(`${URL.HOST}/economia/api/validaCondiciones/`, {Condicion: cupon.Condicion, Productos: Arrayfy(cart.items).map(product => ({codigo: product.id, price: product.price, cantidad: product._quanty}))})
+                        console.log("res2", res)
+                        if(res.data.Success !== true) {setError(res.data.Message)}
+                        else if(res.data.ValorProductos < cupon.VlrMinimo) setError(`El cupón ${cupon.NombreCupon} solo es válido para compras mínimas de ${f(cupon.VlrMinimo)}. Aplica para ${cupon.Descripcion}.`)
+                        
+                    } else Alert.alert('Droguería La Economía', `El cupón ${cupon.NombreCupon} por valor de ${cupon.ValorCupon} ha sido aplicado al pedido`)
+                } else {
+                    Alert.alert('Droguería La Economía', data.Message)
+                }
+                
+                cupon.aplica = !error;
+           
+                if(cupon.aplica) setOrderDiscount(cupon.ValorCupon)
+                else setOrderDiscount(0)
+                setCupon(cupon)
+                setCouponToOrder(cupon)
+                
+ 
+            } catch(err) {console.log(err)}
+            finally {
+                setLoading(false)
             }
-            
-            cupon.Aplica = !error;
-       
-            if(cupon.Aplica) setOrderDiscount(cupon.ValorCupon)
-            else setOrderDiscount(0)
-            setCupon(cupon)
-            setCouponToOrder(cupon)
+ 
         }
 
     }
 
-    const getCurrentTime = () => {
-        let today = new Date();
-        let hours = (today.getHours() < 10 ? '0' : '') + today.getHours();
-        let minutes = (today.getMinutes() < 10 ? '0' : '') + today.getMinutes();
-        let seconds = (today.getSeconds() < 10 ? '0' : '') + today.getSeconds();
-        return hours + ':' + minutes + ':' + seconds;
-    }
 
     const checkoutOrder = async () => 
     {
@@ -161,94 +168,73 @@ const Checkout = ({navigation}) => {
                     descripcion: item.name, 
                     price: item.price,
                     stock: item.stock,
-                    idoferta: item.idoferta != undefined ? item.idoferta : 0,
+                    idOferta: item.idoferta != undefined ? item.idoferta : 0,
                     cantidad: item._quanty,
                     descuento: item.discount,
-                    IdUnidad: item.IdUnidad
+                    idUnidad: item.IdUnidad
                 }
             )
         })
 
         if(productos.length == 0) return Alert.alert("La Economia", "No hay productos en el carrito")
 
-        productos.push({codigo: "999992", descripcion: "domicilio", price: cc.shipping, stock:1, idoferta:0, cantidad: 1, descuento:0, IdUnidad:1})
+        productos.push({codigo: "999992", descripcion: "domicilio", price: cc.shipping, stock:1, idOferta:0, cantidad: 1, descuento:0, idUnidad:1})
 
         setLoading(true)
+        let fPagos = { "Efectivo": 11, "Datáfono": 73, "TCO": 53, "PSE": 23}
 
-        const res = await API.POST.checkout(
+        let senddata = {
+            formaPago: fPagos[metodoPago], 
+            tipoPago: metodoPago == "PSE" ? "OnLine" : "ContraEntrega", 
+            direccion: direccion, 
+            drogueria: cc.id, 
+            vlrDomicilio: 0, 
+            ciudad: cc.id, 
+            subtotal: cart.total - orderDiscount, 
+            id_Servicio: "APP" + Platform.OS === 'ios' ? "ios" : "android", 
+            nota: especificaciones + ` -- Forma de pago: ${metodoPago}`,
+            bono:{aplica: false},
+            puntos: {aplica: false},
+            cliente: {nit: user.nit, nombres: user.nombres, email: user.email, auth_token: user.token},
+            cupon: couponToOrder.aplica ? couponToOrder : {aplica: false},
+            productos:productos,
+            email: user.email,
+            nit: user.nit,
+            auth_token: user.token,
+            marca: "ECO"
+        };
+
+        console.log(senddata)
+
+        try {
+            const {data} = await axios.post(`${URL.HOST}/api/pedidos/setpedido/`, senddata)
+
+            if(data.success === true)
             {
-                a: metodoPago, 
-                b: metodoPago == "PSE" ? "OnLine" : "ContraEntrega", 
-                c: direccion, 
-                d: cc.id, 
-                e: 0, 
-                f: cc.id, 
-                g: cc.city,
-                h: cart.total - orderDiscount, 
-                s: cc.shipping, 
-                v: orderDiscount, 
-                i: "APP" + Platform.OS === 'ios' ? "ios" : "android", 
-                time: getCurrentTime(), 
-                obs: especificaciones 
-            },
-            {j:{Aplica: false}},
-            {k: {nit: user.nit, nombres: user.nombres, email: user.email, auth_token: user.token}},
-            {l: couponToOrder.Aplica ? couponToOrder : {Aplica: false}},
-            {m:productos}
-        )
-
-
-        if(!res.error)
-        {
-
-            if(res.message.codeError) Alert.alert('Atención', res.message.message)
-            else {
-                if(res.message.order == 0) {
+                if(data.data[0].numeroPedido == 0) {
                     return Alert.alert('Atención', 'No se pudo generar el pedido, por favor vuelve a intentarlo.', [
                         {text: 'Reintentar', onPress: async () => await checkoutOrder()},
                         {text: 'Cancelar',}
                     ])   
                 }
-                setCurrentPedido(res.message.order)
-                if(metodoPago == "PSE") {
-                
-                    let d = {
-                        nombre: user.nombres.split(" ")[0],
-                        apellido: user.nombres.split(" ")[1] || "",
-                        celular: "",
-                        telefono: "",
-                        email: user.email,
-                        ciudad: res.message.city,
-                        direccion: direccion,
-                        cedula: user.nit,
-                        total: cart.total - orderDiscount + cc.shipping,
-                        numero_orden: res.message.order
-                    }
-
-                    //const body = encodeURI(`Acid=83791&Accountpassword=1234&FNm=${d.nombre}&LNm=${d.apellido}&Mob=${d.celular}&Pho=${d.telefono}&Ema=${d.email}&CI=${d.ciudad}&Add=${d.direccion}&IdNumber=${d.cedula}&IdType=CC&MOpt1=001&Total=${d.total}&Tax=0&BDev=0&Ref1=${d.numero_orden}&Desc=0&MOpt3=https://www.droguerialaeconomia.com/economia/pagos/Online&ReturnURL=https://www.droguerialaeconomia.com/economia/pagos/returndle&CancelURL=https://www.droguerialaeconomia.com/economia/pagos/returndle&EnablePSE=true&EnableCard=false&EnableCash=false&EnableEfecty=false&Version=2`)
-                    setPsebody(res.message.form)
+                setCurrentPedido(data.data[0].numeroPedido)
+                if(senddata.formaPago == 23) {
+                    setPsebody(data.data[1].urlPayment)
                     setModalPSEVisible(true)
 
                 } else finishCompra()
-            }
-            
-        } else Alert.alert('Atención', 'No se pudo generar el pedido, por favor vuelve a intentarlo.')
-
+            } else Alert.alert('Atención', data.message)
+        } catch(error) {
+            console.error(error)
+        }
     }
 
     const finishCompra = async () => {
         setLoading(false)
-        const pedido = await API.POST.getPedido(currentPedido)
-
-        let _state = {}
-
-        if(!pedido.error) _state.pedidoexito = pedido.message.data[0].Estado
-        
         clearCartItems()
         Alert.alert('Atención', 'Su pedido fue creado satisfactoriamente.')
         navigation.navigate("Home")
     }
-
 
     const cancelPSE = async () => {
 
@@ -267,8 +253,6 @@ const Checkout = ({navigation}) => {
 
         
     }
-
-    
 
     return (
         <SafeAreaView style={styles.container} forceInset={{top: "never", bottom: "never"}}>
@@ -311,13 +295,13 @@ const Checkout = ({navigation}) => {
                                     }
                                 </View>
 
-                                {couponToOrder.IdCupon && couponToOrder.Aplica && 
+                                {couponToOrder.IdCupon && couponToOrder.aplica && 
                                     <View style={_styles.cuponResult}>
                                         <Text style={{fontSize: 15, textAlign:"center", color: "#0a8623", fontFamily:"Tommy"}}><FontAwesome name="check" size={17} color="#0a8623" /> Cupón aplicado con éxito</Text>
                                     </View>
                                 }
 
-                                {couponToOrder.IdCupon && !couponToOrder.Aplica && 
+                                {couponToOrder.IdCupon && !couponToOrder.aplica && 
                                     <View style={[_styles.cuponResult, {borderColor:"#aa232366"}]}>
                                         <Text style={{fontSize: 15, textAlign:"center", color: "#aa2323", fontFamily:"Tommy"}}><FontAwesome name="times" size={17} color="#aa2323" /> Cupón inválido</Text>
                                     </View>
@@ -394,7 +378,7 @@ const Checkout = ({navigation}) => {
                             </View>
                             
                             <View style={{marginTop:10, marginHorizontal:30}}>
-                                <Button title="CONFIRMAR PEDIDO" styleMode="blue" loading={loading}  onPress={() => checkoutOrder()} />
+                                <Button title="Confirmar Pedido" styleMode="blue" loading={loading}  onPress={() => checkoutOrder()} />
                             </View>
 
                         </View>

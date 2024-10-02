@@ -14,7 +14,9 @@ import Title from "../components/Title";
 import { Arrayfy, sortByKey } from "../global/functions";
 import ProductList from "../components/ProductList";
 import { getProducts } from "../services/products";
+import { API, URL } from "../services/services";
 
+import axios from 'axios';
 
 const window = Dimensions.get("window");
 const PAGE_WIDTH = window.width;
@@ -51,7 +53,7 @@ const sorts = {
 }
 
 
-const Profile = ({navigation}) => {
+const Categoria = ({navigation}) => {
 
     const [categorias, setCategorias] = useState([])
     const [subcategorias, setSubcategorias] = useState([])
@@ -61,19 +63,26 @@ const Profile = ({navigation}) => {
     const [currentSub, setCurrentSub] = useState(null)
     
 
-    const { params, user } = useContext(UtilitiesContext)
+    const { params, user, location } = useContext(UtilitiesContext)
 
     useEffect(() => {
-        let cats = []
-        if(params && params.cc && params.cc.categorias) {
-            Object.keys(params.cc.categorias.categorias).forEach(key => {
-                const cat = {...params.cc.categorias.categorias[key], sort: sorts[key] || 1}
-                cats.push(cat)
-            })
-            setCategorias(sortByKey(cats, "sort", "desc"))
-        }
-    }, [params])
+        let cats = [];
+        (async function () {
+            try {
+                const {data} = await axios.post(`${URL.HOST}/api/categorias/${location.id}`, {marca: "ECO", canal: "APP"})
+                if(data.success === true) {
+                    data.data.forEach(grupo => {
+                        grupo.Categorias.forEach(cat => {
+                            if(["01001"].includes(cat.IdCategoria)) return;
+                            cats.push({id: cat.IdCategoria, title: cat.Categoria, subs: cat.Subcategorias})
+                        })
+                    })
+                    setCategorias(cats.filter(item => !["Medicamentos", "Genéricos", "Hospitalarios", "Regulados", "Ortopédicos"].includes(item.title)))
+                }
+            } catch(err) {console.log(err)}
+        })();
 
+    }, [location])
 
     const baseOptions =  {
         vertical: false,
@@ -82,7 +91,11 @@ const Profile = ({navigation}) => {
     }
 
     const selectCat = (cat) => {
-        let subs = Arrayfy(cat.subs)
+        console.log(cat)
+        let subs = []
+        cat.subs.forEach(item => {
+            if(item.visible) subs.push({id: item.IdSubcategoria, title: item.Subcategoria})
+        })
         setCurrentCat(cat)
         setProductos([])
         setSubcategorias(subs)
@@ -94,10 +107,9 @@ const Profile = ({navigation}) => {
         setCurrentSub(sub)
         setProductos([])
         setProductosLoading(true)
-        console.log(`[cats]${cat.id}/${sub.id}`)
-        const res = await getProducts(`[cats]${cat.id}/${sub.id}`, params.cc.id, user)
+        const products = await getProducts(`cats`, params.cc.id, user, {cat: cat.id, sub: sub.id})
         setProductosLoading(false)
-        setProductos(res.products)
+        setProductos(products)
     }
 
     return(
@@ -185,7 +197,7 @@ const Profile = ({navigation}) => {
 
 }
 
-export default Profile 
+export default Categoria 
 
 const _styles = {
     

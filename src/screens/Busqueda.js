@@ -22,20 +22,22 @@ const Busqueda = (props) => {
 
 
     const searchProducts = async(search) => {
+        console.log("Buscar", search)
         if(!search || search == "") return
+
+        let products;
+
         setSearchText(search)
         setProductList([])
-
         setLoading(true)
-
-        const products = await getProducts(search, location.id, user)
-
-        setSearchLabel(products.search_label)
-
+        if(search == "[sales]") {
+            products = await getProducts("ofertas", location.id, user)
+            setSearchLabel("Las mejores ofertas")
+        } else {
+            products = await getProducts("search", location.id, user, {search}) 
+        }
         setLoading(false)
-
-        setProductList(products.products)
-
+        setProductList(products)
     }
 
     useEffect(() => {

@@ -61,12 +61,10 @@ export const ProductDetail = ({
         let p = false, _gallery
 
         setLoading(true);
-        const products = await getProducts("[code]" +  productID, location.id, user)
+        const products = await getProducts([productID], location.id, user)
         setLoading(false);
 
-        if(products.products.length > 0) {
-            p = products.products[0]
-        }
+        if(products.length > 0) {p = products[0]}
         
         if(p) {
             setLoadingGallery(true)
@@ -93,7 +91,7 @@ export const ProductDetail = ({
             Alert.alert('Atención', 'No se pudo obtener la información de este producto.',
             [
                 {text: 'Reintentar', onPress: async() => await retrieveProduct()},
-                {text: 'Volver', onPress: () => navigation.goBack()}
+                {text: 'Cancelar', onPress: () => {}}
             ], {cancelable: false})
         }
 

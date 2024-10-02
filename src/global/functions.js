@@ -61,11 +61,6 @@ export const f = (number, {currencyPrefix = '$', currencySuffix = '', decimalCou
 
 }
 
-
-
-
-
-
 export const IsExcludedCategory = (categoryId) =>
 {
     return (

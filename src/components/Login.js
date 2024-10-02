@@ -1,10 +1,11 @@
 import React, { useState, useContext} from "react";
 import { View, TouchableOpacity, Text, TextInput, Modal, Image } from "react-native";
-import { API } from "../services/services";
+import { API, URL } from "../services/services";
 import { UtilitiesContext } from '../context/UtilitiesContext'
 import Title from "./Title";
 import Button from "../components/Button";
 import { styles } from '../global/styles';
+import axios from 'axios';
 
 const eye = require("../../assets/icons/eye.png")
 const eyeno = require("../../assets/icons/eye-no.png")
@@ -28,22 +29,31 @@ const Login = ({ onRegister = () => {}, onLogin = () => {}, visible = false, onC
 
             setLoading(true)
             setError("")
-            const res = await API.POST.signin(email + "::" + password)
-            setLoading(false)
-            setPassword("")
-            if(res.message.success == false) {
-                setError("El correo electrónico o la contraseña son incorrectos.")
-            } else if(res.message.nit) {
-                setEmail("")
-                setUser({
-                    logged: true,
-                    nit: res.message.nit,
-                    token: res.message.auth_token,
-                    nombres: res.message.nombres,
-                    email: res.message.email
-                })
-                onLogin()
+            try {
+                const {data} = await axios.post(`${URL.HOST}/economia/site/users/login/`, {email, password })
+                
+                if(data.success == false) {
+                    setError("El correo electrónico o la contraseña son incorrectos.")
+                } else if(data.data.nit) {
+                    setEmail("")
+                    setUser({
+                        logged: true,
+                        nit: data.data.nit,
+                        token: data.data.auth_token,
+                        nombres: data.data.nombres,
+                        email: data.data.email
+                    })
+                    onLogin()
+                }
+        
+            } catch(error) {
+                console.error(error)
+            } finally {
+                setLoading(false)
+                setPassword("")
             }
+            
+          
         }
         else setError("Debe llenar todos los campos");
     }

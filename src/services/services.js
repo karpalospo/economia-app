@@ -27,9 +27,8 @@ export const URL = {
     HOST: 'https://www.droguerialaeconomia.com',
     ETICOS_HOST: 'https://intranet.eticosweb.net',
     S3_GROUPS: 'https://economia-app.s3.ca-central-1.amazonaws.com/economia/groups/',
-    server2: "https://www.imperacore.net",
+    server2: "https://www.droguerialaeconomia.com",
 }
-
 
 const fetchAsync = async (url, method, { body = {}, headers = {'content-type': 'application/json'}} = {}) => 
 {

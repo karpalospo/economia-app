@@ -9,7 +9,7 @@ import { UtilitiesContext } from '../context/UtilitiesContext'
 
 
 const BottomMenu = ({navigation, showLocation = false}) => {
-
+console.log(showLocation)
     const { location, setLocation, user, mustShowLocation, setMustShowLocation } = useContext(UtilitiesContext)
     
     const [loginVisible, setLoginVisible] = useState(false)

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, Image, SafeAreaView} from 'react-native';
-import { BarCodeScanner } from 'expo-barcode-scanner';
-import { Camera } from 'expo-camera';
+import { CameraView, Camera } from "expo-camera";
 import Title from "../components/Title";
 
 const left = require('../../assets/icons/product/barcode_left.png')
@@ -19,8 +18,8 @@ const Camara = ({onClose, onBarCodeScanned}) => {
         })();
     }, [hasPermission]);
 
-    const handleBarCodeScanned = ({ type, data }) => {
-        console.log(data)
+    const handleBarcodeScanned = ({ type, data }) => {
+        console.log("QR", data)
         setScanned(true)  
         onBarCodeScanned(data)
         onClose()
@@ -36,7 +35,11 @@ const Camara = ({onClose, onBarCodeScanned}) => {
             {hasPermission === false &&  <Text>Debe permitir acceso a la cámara</Text>}
             {hasPermission === true &&
             <View style={{flex:1, justifyContent:"center", position:"relative", backgroundColor: "black"}}>
-                <BarCodeScanner onBarCodeScanned={handleBarCodeScanned} style={StyleSheet.absoluteFillObject} />
+                <CameraView
+                    barcodeScannerSettings={{barcodeTypes: ["qr", "pdf417", "ean13"]}} 
+                    onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
+                    style={StyleSheet.absoluteFillObject} 
+                />
                 <View style={{flex:1, backgroundColor: styles.color, justifyContent: "flex-end"}} >
                     <Text style={styles.titleText}>Encuadre aquí el código de barras del producto</Text>
                 </View>
